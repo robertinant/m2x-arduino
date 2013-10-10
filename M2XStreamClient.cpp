@@ -52,11 +52,9 @@ int M2XStreamClient::send(const char* feedId,
   return readStatusCode();
 }
 
-int M2XStreamClient::readStatusCode() {
-  static const char* kHeaderText = "HTTP/*.* ";
-  const int kHeaderLen = 9;
-  int headerIndex = 0;
-  int responseCode = 0;
+int M2XStreamClient::waitForString(const char* str) {
+  int currentIndex = 0;
+  if (str[currentIndex] == '\0') return E_OK;
 
   while (true) {
     while (_client->available()) {
@@ -64,20 +62,53 @@ int M2XStreamClient::readStatusCode() {
 #ifdef DEBUG
       Serial.print(c);
 #endif
-      if (headerIndex < kHeaderLen) {
-        if ((c == kHeaderText[headerIndex]) ||
-            (kHeaderText[headerIndex] == '*')) headerIndex++;
-      } else {
-        // Here we use headerIndex instead of creating yet another variable on
-        // the precious memory of Arduino. For the first time we reached here,
-        // headerIndex should be 9, considering response code contains 3
-        // characters, headerIndex should be 12 when we gathered enough data.
-        headerIndex++;
-        responseCode = responseCode * 10 + (c - '0');
-        if (headerIndex == 12) {
-          closeCurrentConnection();
-          return responseCode;
+
+      if ((str[currentIndex] == '*') ||
+          (c == str[currentIndex])) {
+        currentIndex++;
+        if (str[currentIndex] == '\0') {
+          return E_OK;
         }
+      } else {
+        // start from the beginning
+        currentIndex = 0;
+      }
+    }
+
+    if (!_client->connected()) {
+#ifdef DEBUG
+      Serial.println("ERROR: The client is disconnected from the server!");
+#endif
+      closeCurrentConnection();
+      return E_DISCONNECTED;
+    }
+
+    delay(1000);
+  }
+  // never reached here
+  return E_NOTREACHABLE;
+}
+
+int M2XStreamClient::readStatusCode() {
+  int responseCode = 0;
+  int ret = waitForString("HTTP/*.* ");
+  if (ret != E_OK) {
+    return ret;
+  }
+
+  // ret is not needed from here(since it must be E_OK), so we can use it
+  // as a regular variable now.
+  ret = 0;
+  while (true) {
+    while (_client->available()) {
+      char c = _client->read();
+#ifdef DEBUG
+      Serial.print(c);
+#endif
+      responseCode = responseCode * 10 + (c - '0');
+      ret++;
+      if (ret == 3) {
+        return responseCode;
       }
     }
 
@@ -94,6 +125,10 @@ int M2XStreamClient::readStatusCode() {
 
   // never reached here
   return E_NOTREACHABLE;
+}
+
+int M2XStreamClient::skipHttpHeader() {
+  return waitForString("\r\n\r\n");
 }
 
 void M2XStreamClient::closeCurrentConnection() {

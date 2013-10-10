@@ -8,6 +8,7 @@
 
 #define DEBUG
 
+static const int E_OK = 0;
 static const int E_NOCONNECTION = -1;
 static const int E_DISCONNECTED = -2;
 static const int E_NOTREACHABLE = -3;
@@ -29,6 +30,8 @@ private:
   int _port;
 
   int readStatusCode();
+  int waitForString(const char* str);
+  int skipHttpHeader();
   void closeCurrentConnection();
   void printEncodedString(const char* str);
 };
