@@ -8,12 +8,12 @@ char pass[] = "basiccream298";    // your network password (use for WPA, or use 
 int keyIndex = 0;            // your network key Index number (needed only for WEP)
 
 int status = WL_IDLE_STATUS;
-char server[] = "192.168.1.6";    // name address server
-int port = 9393;
+char server[] = "api-m2x.att.com";    // M2X API server
+int port = 80;
 
-char feedId[] = "31502478bad5bb5344455810ec67d9dd"; // Feed you want to post to
-char streamName[] = "temperature"; // Stream you want to post to
-char m2xKey[] = "f040df815ae1bf1de0c41c4f59b6c52c"; // Your M2X access key
+char feedId[] = "<feed id>"; // Feed you want to post to
+char streamName[] = "<stream name>"; // Stream you want to post to
+char m2xKey[] = "<M2X access key>"; // Your M2X access key
 
 const int temperaturePin = 0;
 WiFiClient client;

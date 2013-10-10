@@ -42,7 +42,7 @@ int M2XStreamClient::send(const char* feedId,
 #ifdef DEBUG
     Serial.println("ERROR: Cannot connect to M2X server!");
 #endif
-    return -1;
+    return E_NOCONNECTION;
   }
 
   return readStatusCode();
@@ -54,14 +54,20 @@ int M2XStreamClient::readStatusCode() {
   int headerIndex = 0;
   int responseCode = 0;
 
-  while (1) {
+  while (true) {
     while (_client->available()) {
       char c = _client->read();
+#ifdef DEBUG
       Serial.print(c);
+#endif
       if (headerIndex < kHeaderLen) {
         if ((c == kHeaderText[headerIndex]) ||
             (kHeaderText[headerIndex] == '*')) headerIndex++;
       } else {
+        // Here we use headerIndex instead of creating yet another variable on
+        // the precious memory of Arduino. For the first time we reached here,
+        // headerIndex should be 9, considering response code contains 3
+        // characters, headerIndex should be 12 when we gathered enough data.
         headerIndex++;
         responseCode = responseCode * 10 + (c - '0');
         if (headerIndex == 12) {
@@ -76,18 +82,18 @@ int M2XStreamClient::readStatusCode() {
       Serial.println("ERROR: The client is disconnected from the server!");
 #endif
       closeCurrentConnection();
-      return -1;
+      return E_DISCONNECTED;
     }
 
     delay(1000);
   }
 
   // never reached here
-  return -1;
+  return E_NOTREACHABLE;
 }
 
 void M2XStreamClient::closeCurrentConnection() {
-  // Eats up buffered data
-  while (_client->available()) _client->read();
+  // Eats up buffered data before closing
+  _client->flush();
   _client->stop();
 }

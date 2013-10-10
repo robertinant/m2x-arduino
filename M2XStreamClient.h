@@ -8,6 +8,10 @@
 
 #define DEBUG
 
+static const int E_NOCONNECTION = -1;
+static const int E_DISCONNECTED = -2;
+static const int E_NOTREACHABLE = -3;
+
 class M2XStreamClient {
 public:
   static const char* kDefaultM2XHost;
