@@ -52,6 +52,37 @@ int M2XStreamClient::send(const char* feedId,
   return readStatusCode();
 }
 
+int M2XStreamClient::receive(const char* feedId, const char* streamName) {
+  if (_client->connect(_host, _port)) {
+#ifdef DEBUG
+    Serial.println("Connected to M2X server!");
+#endif
+    _client->print("GET /v1/feeds/");
+    printEncodedString(feedId);
+    _client->print("/streams/");
+    printEncodedString(streamName);
+    _client->println("/values HTTP/1.0");
+
+    _client->print("X-M2X-KEY: ");
+    _client->println(_key);
+    _client->print("Host: ");
+    printEncodedString(_host);
+    if (_port != kDefaultM2XPort) {
+      _client->print(":");
+      // port is an integer, does not need encoding
+      _client->print(_port);
+    }
+    _client->println();
+    _client->println();
+  } else {
+#ifdef DEBUG
+    Serial.println("ERROR: Cannot connect to M2X server!");
+#endif
+    return E_NOCONNECTION;
+  }
+  return readStatusCode();
+}
+
 int M2XStreamClient::waitForString(const char* str) {
   int currentIndex = 0;
   if (str[currentIndex] == '\0') return E_OK;
@@ -79,7 +110,7 @@ int M2XStreamClient::waitForString(const char* str) {
 #ifdef DEBUG
       Serial.println("ERROR: The client is disconnected from the server!");
 #endif
-      closeCurrentConnection();
+      close();
       return E_DISCONNECTED;
     }
 
@@ -116,7 +147,42 @@ int M2XStreamClient::readStatusCode() {
 #ifdef DEBUG
       Serial.println("ERROR: The client is disconnected from the server!");
 #endif
-      closeCurrentConnection();
+      return E_DISCONNECTED;
+    }
+
+    delay(1000);
+  }
+
+  // never reached here
+  return E_NOTREACHABLE;
+}
+
+int M2XStreamClient::readContentLength() {
+  int ret = waitForString("Content-Length: ");
+  if (ret != E_OK) {
+    return ret;
+  }
+
+  // From now on, ret is not needed, we can use it
+  // to keep the final result
+  ret = 0;
+  while (true) {
+    while (_client->available()) {
+      char c = _client->read();
+#ifdef DEBUG
+      Serial.print(c);
+#endif
+      if ((c == '\r') || (c == '\n')) {
+        return (ret == 0) ? (E_INVALID) : (ret);
+      } else {
+        ret = ret * 10 + (c - '0');
+      }
+    }
+
+    if (!_client->connected()) {
+#ifdef DEBUG
+      Serial.println("ERROR: The client is disconnected from the server!");
+#endif
       return E_DISCONNECTED;
     }
 
@@ -131,7 +197,7 @@ int M2XStreamClient::skipHttpHeader() {
   return waitForString("\r\n\r\n");
 }
 
-void M2XStreamClient::closeCurrentConnection() {
+void M2XStreamClient::close() {
   // Eats up buffered data before closing
   _client->flush();
   _client->stop();

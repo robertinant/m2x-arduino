@@ -12,6 +12,7 @@ static const int E_OK = 0;
 static const int E_NOCONNECTION = -1;
 static const int E_DISCONNECTED = -2;
 static const int E_NOTREACHABLE = -3;
+static const int E_INVALID = -4;
 
 class M2XStreamClient {
 public:
@@ -23,6 +24,11 @@ public:
                   const char* host = kDefaultM2XHost,
                   int port = kDefaultM2XPort);
   int send(const char* feedId, const char* streamName, double value);
+  int receive(const char* feedId, const char* streamName);
+
+  int readContentLength();
+  int skipHttpHeader();
+  void close();
 private:
   Client* _client;
   const char* _key;
@@ -31,8 +37,6 @@ private:
 
   int readStatusCode();
   int waitForString(const char* str);
-  int skipHttpHeader();
-  void closeCurrentConnection();
   void printEncodedString(const char* str);
 };
 
