@@ -30,6 +30,7 @@ private:
 
   int readStatusCode();
   void closeCurrentConnection();
+  void printEncodedString(const char* str);
 };
 
 #endif  /* M2XStreamClient_h */

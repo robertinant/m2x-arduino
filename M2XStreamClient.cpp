@@ -1,5 +1,7 @@
 #include "M2XStreamClient.h"
 
+#define HEX(t_) (((t_) > 9) ? ((t_) - 10 + 'A') : ((t_) + '0'))
+
 const char* M2XStreamClient::kDefaultM2XHost = "api-m2x.att.com";
 
 M2XStreamClient::M2XStreamClient(Client* client,
@@ -19,17 +21,18 @@ int M2XStreamClient::send(const char* feedId,
     Serial.println("Connected to M2X server!");
 #endif
     _client->print("PUT /v1/feeds/");
-    _client->print(feedId);
+    printEncodedString(feedId);
     _client->print("/streams/");
-    _client->print(streamName);
+    printEncodedString(streamName);
     _client->println(" HTTP/1.0");
 
     _client->print("X-M2X-KEY: ");
     _client->println(_key);
     _client->print("Host: ");
-    _client->print(_host);
+    printEncodedString(_host);
     if (_port != kDefaultM2XPort) {
       _client->print(":");
+      // port is an integer, does not need encoding
       _client->print(_port);
     }
     _client->println();
@@ -37,6 +40,7 @@ int M2XStreamClient::send(const char* feedId,
     _client->println();
 
     _client->print("value=");
+    // value is a double, does not need encoding, either
     _client->print(value);
   } else {
 #ifdef DEBUG
@@ -96,4 +100,22 @@ void M2XStreamClient::closeCurrentConnection() {
   // Eats up buffered data before closing
   _client->flush();
   _client->stop();
+}
+
+
+void M2XStreamClient::printEncodedString(const char* str) {
+  for (int i = 0; str[i] != 0; i++) {
+    if (((str[i] >= 'A') && (str[i] <= 'Z')) ||
+        ((str[i] >= 'a') && (str[i] <= 'z')) ||
+        ((str[i] >= '0') && (str[i] <= '9')) ||
+        (str[i] == '-') || (str[i] == '_') ||
+        (str[i] == '.') || (str[i] == '~')) {
+      _client->print(str[i]);
+    } else {
+      // Encode all other characters
+      _client->print('%');
+      _client->print(HEX(str[i] / 16));
+      _client->print(HEX(str[i] % 16));
+    }
+  }
 }
