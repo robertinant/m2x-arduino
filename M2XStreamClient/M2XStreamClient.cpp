@@ -47,28 +47,77 @@ int M2XStreamClient::send(const char* feedId,
 #ifdef DEBUG
     Serial.println("Connected to M2X server!");
 #endif
-    _client->print("PUT /v1/feeds/");
-    printEncodedString(feedId);
-    _client->print("/streams/");
-    printEncodedString(streamName);
-    _client->println(" HTTP/1.0");
-
-    _client->print("X-M2X-KEY: ");
-    _client->println(_key);
-    _client->print("Host: ");
-    printEncodedString(_host);
-    if (_port != kDefaultM2XPort) {
-      _client->print(":");
-      // port is an integer, does not need encoding
-      _client->print(_port);
-    }
-    _client->println();
-    _client->println("Content-Type: application/x-www-form-urlencoded");
-    _client->println();
+    writeSendHeader(feedId, streamName);
 
     _client->print("value=");
     // value is a double, does not need encoding, either
     _client->print(value);
+  } else {
+#ifdef DEBUG
+    Serial.println("ERROR: Cannot connect to M2X server!");
+#endif
+    return E_NOCONNECTION;
+  }
+
+  return readStatusCode();
+}
+
+int M2XStreamClient::send(const char* feedId,
+                          const char* streamName,
+                          long value) {
+  if (_client->connect(_host, _port)) {
+#ifdef DEBUG
+    Serial.println("Connected to M2X server!");
+#endif
+    writeSendHeader(feedId, streamName);
+
+    _client->print("value=");
+    // value is a double, does not need encoding, either
+    _client->print(value);
+  } else {
+#ifdef DEBUG
+    Serial.println("ERROR: Cannot connect to M2X server!");
+#endif
+    return E_NOCONNECTION;
+  }
+
+  return readStatusCode();
+}
+
+int M2XStreamClient::send(const char* feedId,
+                          const char* streamName,
+                          int value) {
+  if (_client->connect(_host, _port)) {
+#ifdef DEBUG
+    Serial.println("Connected to M2X server!");
+#endif
+    writeSendHeader(feedId, streamName);
+
+    _client->print("value=");
+    // value is a double, does not need encoding, either
+    _client->print(value);
+  } else {
+#ifdef DEBUG
+    Serial.println("ERROR: Cannot connect to M2X server!");
+#endif
+    return E_NOCONNECTION;
+  }
+
+  return readStatusCode();
+}
+
+int M2XStreamClient::send(const char* feedId,
+                          const char* streamName,
+                          const char* value) {
+  if (_client->connect(_host, _port)) {
+#ifdef DEBUG
+    Serial.println("Connected to M2X server!");
+#endif
+    writeSendHeader(feedId, streamName);
+
+    _client->print("value=");
+    // value is a double, does not need encoding, either
+    printEncodedString(value);
   } else {
 #ifdef DEBUG
     Serial.println("ERROR: Cannot connect to M2X server!");
@@ -108,6 +157,27 @@ int M2XStreamClient::receive(const char* feedId, const char* streamName) {
     return E_NOCONNECTION;
   }
   return readStatusCode();
+}
+
+void M2XStreamClient::writeSendHeader(const char* feedId, const char* streamName) {
+  _client->print("PUT /v1/feeds/");
+  printEncodedString(feedId);
+  _client->print("/streams/");
+  printEncodedString(streamName);
+  _client->println(" HTTP/1.0");
+
+  _client->print("X-M2X-KEY: ");
+  _client->println(_key);
+  _client->print("Host: ");
+  printEncodedString(_host);
+  if (_port != kDefaultM2XPort) {
+    _client->print(":");
+    // port is an integer, does not need encoding
+    _client->print(_port);
+  }
+  _client->println();
+  _client->println("Content-Type: application/x-www-form-urlencoded");
+  _client->println();
 }
 
 int M2XStreamClient::waitForString(const char* str) {

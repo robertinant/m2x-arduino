@@ -25,6 +25,9 @@ public:
                   const char* host = kDefaultM2XHost,
                   int port = kDefaultM2XPort);
   int send(const char* feedId, const char* streamName, double value);
+  int send(const char* feedId, const char* streamName, long value);
+  int send(const char* feedId, const char* streamName, int value);
+  int send(const char* feedId, const char* streamName, const char* value);
   int receive(const char* feedId, const char* streamName);
 
   int readStreamValue(stream_value_read_callback callback, void* context);
@@ -35,6 +38,7 @@ private:
   const char* _host;
   int _port;
 
+  void writeSendHeader(const char* feedId, const char* streamName);
   int readContentLength();
   int skipHttpHeader();
   int readStatusCode();
