@@ -28,10 +28,8 @@ public:
   int send(const char* feedId, const char* streamName, long value);
   int send(const char* feedId, const char* streamName, int value);
   int send(const char* feedId, const char* streamName, const char* value);
-  int receive(const char* feedId, const char* streamName);
-
-  int readStreamValue(stream_value_read_callback callback, void* context);
-  void close();
+  int receive(const char* feedId, const char* streamName,
+              stream_value_read_callback callback, void* context);
 private:
   Client* _client;
   const char* _key;
@@ -41,10 +39,12 @@ private:
   void writeSendHeader(const char* feedId, const char* streamName);
   int readContentLength();
   int skipHttpHeader();
-  int readStatusCode();
+  int readStatusCode(bool closeClient);
   int waitForString(const char* str);
   void printEncodedString(const char* str);
   void putStream(const char*, const char*, String);
+  void close();
+  int readStreamValue(stream_value_read_callback callback, void* context);
 };
 
 #endif  /* M2XStreamClient_h */

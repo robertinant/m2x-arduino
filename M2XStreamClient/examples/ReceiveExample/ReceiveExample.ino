@@ -52,15 +52,9 @@ void setup() {
 }
 
 void loop() {
-  int response = m2xClient.receive(feedId, streamName);
+  int response = m2xClient.receive(feedId, streamName, on_data_point_found, NULL);
   Serial.print("M2x client response code: ");
   Serial.println(response);
-
-  int val = m2xClient.readStreamValue(on_data_point_found, NULL);
-  Serial.print("M2x stream read returns: ");
-  Serial.println(val);
-
-  m2xClient.close();
 
   if (response == -1) while(1) ;
 

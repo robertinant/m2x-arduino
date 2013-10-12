@@ -59,7 +59,7 @@ int M2XStreamClient::send(const char* feedId,
     return E_NOCONNECTION;
   }
 
-  return readStatusCode();
+  return readStatusCode(true);
 }
 
 int M2XStreamClient::send(const char* feedId,
@@ -81,7 +81,7 @@ int M2XStreamClient::send(const char* feedId,
     return E_NOCONNECTION;
   }
 
-  return readStatusCode();
+  return readStatusCode(true);
 }
 
 int M2XStreamClient::send(const char* feedId,
@@ -103,7 +103,7 @@ int M2XStreamClient::send(const char* feedId,
     return E_NOCONNECTION;
   }
 
-  return readStatusCode();
+  return readStatusCode(true);
 }
 
 int M2XStreamClient::send(const char* feedId,
@@ -125,10 +125,11 @@ int M2XStreamClient::send(const char* feedId,
     return E_NOCONNECTION;
   }
 
-  return readStatusCode();
+  return readStatusCode(true);
 }
 
-int M2XStreamClient::receive(const char* feedId, const char* streamName) {
+int M2XStreamClient::receive(const char* feedId, const char* streamName,
+                             stream_value_read_callback callback, void* context) {
   if (_client->connect(_host, _port)) {
 #ifdef DEBUG
     Serial.println("Connected to M2X server!");
@@ -156,7 +157,13 @@ int M2XStreamClient::receive(const char* feedId, const char* streamName) {
 #endif
     return E_NOCONNECTION;
   }
-  return readStatusCode();
+  int status = readStatusCode(false);
+  if ((status >= 200) && (status <= 299)) {
+    readStreamValue(callback, context);
+  }
+
+  close();
+  return status;
 }
 
 void M2XStreamClient::putStream(const char* feedId, const char* streamName, String body) {
@@ -236,10 +243,11 @@ int M2XStreamClient::waitForString(const char* str) {
   return E_NOTREACHABLE;
 }
 
-int M2XStreamClient::readStatusCode() {
+int M2XStreamClient::readStatusCode(bool closeClient) {
   int responseCode = 0;
   int ret = waitForString("HTTP/*.* ");
   if (ret != E_OK) {
+    if (closeClient) close();
     return ret;
   }
 
@@ -255,6 +263,7 @@ int M2XStreamClient::readStatusCode() {
       responseCode = responseCode * 10 + (c - '0');
       ret++;
       if (ret == 3) {
+        if (closeClient) close();
         return responseCode;
       }
     }
@@ -263,6 +272,7 @@ int M2XStreamClient::readStatusCode() {
 #ifdef DEBUG
       Serial.println("ERROR: The client is disconnected from the server!");
 #endif
+      if (closeClient) close();
       return E_DISCONNECTED;
     }
 
@@ -390,10 +400,16 @@ int M2XStreamClient::readStreamValue(stream_value_read_callback callback,
   char buf[BUF_LEN];
 
   int length = readContentLength();
-  if (length < 0) return length;
+  if (length < 0) {
+    close();
+    return length;
+  }
 
   int index = skipHttpHeader();
-  if (index != E_OK) return index;
+  if (index != E_OK) {
+    close();
+    return index;
+  }
   index = 0;
 
   json_parsing_context_state state;
@@ -430,6 +446,7 @@ int M2XStreamClient::readStreamValue(stream_value_read_callback callback,
         (!_client->available()) &&
         ((index + i) < length)) {
       jsonlite_parser_release(p);
+      close();
       return E_NOCONNECTION;
     }
 
@@ -437,6 +454,7 @@ int M2XStreamClient::readStreamValue(stream_value_read_callback callback,
     if ((result != jsonlite_result_ok) &&
         (result != jsonlite_result_end_of_stream)) {
       jsonlite_parser_release(p);
+      close();
       return E_JSON_INVALID;
     }
 
@@ -444,5 +462,6 @@ int M2XStreamClient::readStreamValue(stream_value_read_callback callback,
   }
 
   jsonlite_parser_release(p);
+  close();
   return (result == jsonlite_result_ok) ? (E_OK) : (E_JSON_INVALID);
 }

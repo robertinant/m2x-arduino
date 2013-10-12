@@ -61,8 +61,6 @@ void loop() {
   Serial.print("M2x client response code: ");
   Serial.println(response);
 
-  m2xClient.close();
-
   if (response == -1) while(1) ;
 
   delay(5000);
