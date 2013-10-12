@@ -44,6 +44,7 @@ private:
   int readStatusCode();
   int waitForString(const char* str);
   void printEncodedString(const char* str);
+  void putStream(const char*, const char*, String);
 };
 
 #endif  /* M2XStreamClient_h */

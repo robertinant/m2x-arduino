@@ -159,6 +159,25 @@ int M2XStreamClient::receive(const char* feedId, const char* streamName) {
   return readStatusCode();
 }
 
+void M2XStreamClient::putStream(const char* feedId, const char* streamName, String body) {
+  _client->print("PUT /v1/feeds/");
+  printEncodedString(feedId);
+  _client->print("/streams/");
+  printEncodedString(streamName);
+  _client->println(" HTTP/1.0");
+
+  _client->print("X-M2X-KEY: ");
+  _client->println(_key);
+
+  _client->print("Content-Length: ");
+  _client->println(body.length());
+
+  _client->println("Content-Type: application/x-www-form-urlencoded");
+  _client->println();
+
+  _client->print(body);
+}
+
 void M2XStreamClient::writeSendHeader(const char* feedId, const char* streamName) {
   _client->print("PUT /v1/feeds/");
   printEncodedString(feedId);
