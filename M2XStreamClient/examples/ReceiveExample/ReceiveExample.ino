@@ -15,9 +15,17 @@ char feedId[] = "<feed id>"; // Feed you want to post to
 char streamName[] = "<stream name>"; // Stream you want to post to
 char m2xKey[] = "<M2X access key>"; // Your M2X access key
 
-const int temperaturePin = 0;
 WiFiClient client;
 M2XStreamClient m2xClient(&client, m2xKey, server, port);
+
+void on_data_point_found(const char* at, const char* value, int index, void* context) {
+  Serial.print("Found a data point, index:");
+  Serial.println(index);
+  Serial.print("At:");
+  Serial.println(at);
+  Serial.print("Value:");
+  Serial.println(value);
+}
 
 void setup() {
   Serial.begin(9600);
@@ -44,22 +52,13 @@ void setup() {
 }
 
 void loop() {
-  float voltage, degreesC, degreesF;
-
-  voltage = getVoltage(temperaturePin);
-  degreesC = (voltage - 0.5) * 100.0;
-  degreesF = degreesC * (9.0/5.0) + 32.0;
-
-  Serial.print("voltage: ");
-  Serial.print(voltage);
-  Serial.print("  deg C: ");
-  Serial.print(degreesC);
-  Serial.print("  deg F: ");
-  Serial.println(degreesF);
-
-  int response = m2xClient.send(feedId, streamName, degreesC);
+  int response = m2xClient.receive(feedId, streamName);
   Serial.print("M2x client response code: ");
   Serial.println(response);
+
+  int val = m2xClient.readStreamValue(on_data_point_found, NULL);
+  Serial.print("M2x stream read returns: ");
+  Serial.println(val);
 
   m2xClient.close();
 
@@ -67,7 +66,6 @@ void loop() {
 
   delay(5000);
 }
-
 
 void printWifiStatus() {
   // print the SSID of the network you're attached to:
@@ -84,9 +82,4 @@ void printWifiStatus() {
   Serial.print("signal strength (RSSI):");
   Serial.print(rssi);
   Serial.println(" dBm");
-}
-
-float getVoltage(int pin)
-{
-  return (analogRead(pin) * 0.004882814);
 }
