@@ -6,8 +6,6 @@
 
 #include "Arduino.h"
 
-#define DEBUG
-
 static const int E_OK = 0;
 static const int E_NOCONNECTION = -1;
 static const int E_DISCONNECTED = -2;
