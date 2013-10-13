@@ -9,12 +9,12 @@ byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 // Set the static IP address to use if the DHCP fails to assign
 IPAddress ip(192,168,1,17);
 
-char server[] = "192.168.1.4";    // M2X API server
-int port = 9393;
+char server[] = "api-m2x.att.com";    // M2X API server
+int port = 80;
 
-char feedId[] = "37a1813b03d46e672b9040de6abf0f73"; // Feed you want to post to
-char streamName[] = "temperature"; // Stream you want to post to
-char m2xKey[] = "1e56f68dfd3fc3ad4f129facb6b831b4"; // Your M2X access key
+char feedId[] = "<feed id>"; // Feed you want to post to
+char streamName[] = "<stream name>"; // Stream you want to post to
+char m2xKey[] = "<M2X access key>"; // Your M2X access key
 
 EthernetClient client;
 M2XStreamClient m2xClient(&client, m2xKey, server, port);
@@ -34,6 +34,7 @@ void setup() {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
 
+  Serial.print("Attempting to connect to Ethernet");
   // start the Ethernet connection:
   if (Ethernet.begin(mac) == 0) {
     Serial.println("Failed to configure Ethernet using DHCP");
