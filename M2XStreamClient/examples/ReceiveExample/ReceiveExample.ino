@@ -3,8 +3,8 @@
 
 #include "M2XStreamClient.h"
 
-char ssid[] = "NETGEAR93"; //  your network SSID (name)
-char pass[] = "basiccream298";    // your network password (use for WPA, or use as key for WEP)
+char ssid[] = "<ssid>"; //  your network SSID (name)
+char pass[] = "<WPA password>";    // your network password (use for WPA, or use as key for WEP)
 int keyIndex = 0;            // your network key Index number (needed only for WEP)
 
 int status = WL_IDLE_STATUS;
