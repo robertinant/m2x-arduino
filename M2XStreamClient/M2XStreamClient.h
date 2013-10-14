@@ -3,8 +3,7 @@
 
 #include "Arduino.h"
 #include "Client.h"
-
-#include "Arduino.h"
+#include "NullPrint.h"
 
 static const int E_OK = 0;
 static const int E_NOCONNECTION = -1;
@@ -35,14 +34,16 @@ private:
   const char* _key;
   const char* _host;
   int _port;
+  NullPrint _null_print;
 
-  void writeSendHeader(const char* feedId, const char* streamName);
+  void writeSendHeader(const char* feedId,
+                       const char* streamName,
+                       int contentLength);
   int readContentLength();
   int skipHttpHeader();
   int readStatusCode(bool closeClient);
   int waitForString(const char* str);
   void printEncodedString(const char* str);
-  void putStream(const char*, const char*, String);
   void close();
   int readStreamValue(stream_value_read_callback callback, void* context);
 };

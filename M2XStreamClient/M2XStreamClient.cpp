@@ -37,7 +37,8 @@ M2XStreamClient::M2XStreamClient(Client* client,
                                  int port) : _client(client),
                                              _key(key),
                                              _host(host),
-                                             _port(port) {
+                                             _port(port),
+                                             _null_print() {
 }
 
 int M2XStreamClient::send(const char* feedId,
@@ -47,7 +48,9 @@ int M2XStreamClient::send(const char* feedId,
 #ifdef DEBUG
     Serial.println("Connected to M2X server!");
 #endif
-    writeSendHeader(feedId, streamName);
+    writeSendHeader(feedId, streamName,
+                    // 6 for "value="
+                    _null_print.print(value) + 6);
 
     _client->print("value=");
     // value is a double, does not need encoding, either
@@ -69,7 +72,9 @@ int M2XStreamClient::send(const char* feedId,
 #ifdef DEBUG
     Serial.println("Connected to M2X server!");
 #endif
-    writeSendHeader(feedId, streamName);
+    writeSendHeader(feedId, streamName,
+                    // 6 for "value="
+                    _null_print.print(value) + 6);
 
     _client->print("value=");
     // value is a double, does not need encoding, either
@@ -91,7 +96,9 @@ int M2XStreamClient::send(const char* feedId,
 #ifdef DEBUG
     Serial.println("Connected to M2X server!");
 #endif
-    writeSendHeader(feedId, streamName);
+    writeSendHeader(feedId, streamName,
+                    // 6 for "value="
+                    _null_print.print(value) + 6);
 
     _client->print("value=");
     // value is a double, does not need encoding, either
@@ -113,7 +120,9 @@ int M2XStreamClient::send(const char* feedId,
 #ifdef DEBUG
     Serial.println("Connected to M2X server!");
 #endif
-    writeSendHeader(feedId, streamName);
+    writeSendHeader(feedId, streamName,
+                    // 6 for "value="
+                    _null_print.print(value) + 6);
 
     _client->print("value=");
     // value is a double, does not need encoding, either
@@ -166,26 +175,9 @@ int M2XStreamClient::receive(const char* feedId, const char* streamName,
   return status;
 }
 
-void M2XStreamClient::putStream(const char* feedId, const char* streamName, String body) {
-  _client->print("PUT /v1/feeds/");
-  printEncodedString(feedId);
-  _client->print("/streams/");
-  printEncodedString(streamName);
-  _client->println(" HTTP/1.0");
-
-  _client->print("X-M2X-KEY: ");
-  _client->println(_key);
-
-  _client->print("Content-Length: ");
-  _client->println(body.length());
-
-  _client->println("Content-Type: application/x-www-form-urlencoded");
-  _client->println();
-
-  _client->print(body);
-}
-
-void M2XStreamClient::writeSendHeader(const char* feedId, const char* streamName) {
+void M2XStreamClient::writeSendHeader(const char* feedId,
+                                      const char* streamName,
+                                      int contentLength) {
   _client->print("PUT /v1/feeds/");
   printEncodedString(feedId);
   _client->print("/streams/");
@@ -203,6 +195,12 @@ void M2XStreamClient::writeSendHeader(const char* feedId, const char* streamName
   }
   _client->println();
   _client->println("Content-Type: application/x-www-form-urlencoded");
+#ifdef DEBUG
+  Serial.print("Content Length: ");
+  Serial.println(contentLength);
+#endif
+  _client->print("Content-Length: ");
+  _client->println(contentLength);
   _client->println();
 }
 
