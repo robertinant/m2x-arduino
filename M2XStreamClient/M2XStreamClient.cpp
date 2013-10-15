@@ -5,6 +5,7 @@
 #define HEX(t_) (((t_) > 9) ? ((t_) - 10 + 'A') : ((t_) + '0'))
 
 const char* M2XStreamClient::kDefaultM2XHost = "api-m2x.att.com";
+const char* kUserAgentLine = "User-Agent: Arduino Client/0.1";
 
 #define WAITING_AT 0x1
 #define GOT_AT 0x2
@@ -149,6 +150,7 @@ int M2XStreamClient::receive(const char* feedId, const char* streamName,
     printEncodedString(streamName);
     _client->println("/values HTTP/1.0");
 
+    _client->println(kUserAgentLine);
     _client->print("X-M2X-KEY: ");
     _client->println(_key);
     _client->print("Host: ");
@@ -184,6 +186,7 @@ void M2XStreamClient::writeSendHeader(const char* feedId,
   printEncodedString(streamName);
   _client->println(" HTTP/1.0");
 
+  _client->println(kUserAgentLine);
   _client->print("X-M2X-KEY: ");
   _client->println(_key);
   _client->print("Host: ");
