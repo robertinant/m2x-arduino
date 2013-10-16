@@ -2,10 +2,10 @@
 
 #include "utility/jsonlite_parser.h"
 
-#define HEX(t_) (((t_) > 9) ? ((t_) - 10 + 'A') : ((t_) + '0'))
+#define HEX(t_) ((char) (((t_) > 9) ? ((t_) - 10 + 'A') : ((t_) + '0')))
 
 const char* M2XStreamClient::kDefaultM2XHost = "api-m2x.att.com";
-const char* kUserAgentLine = "User-Agent: Arduino Client/0.1";
+const char* kUserAgentLine = "User-Agent: M2X Arduino Client/0.1";
 
 #define WAITING_AT 0x1
 #define GOT_AT 0x2
@@ -22,6 +22,8 @@ const char* kUserAgentLine = "User-Agent: Arduino Client/0.1";
 #define AT_BUF_LEN 20
 #define VALUE_BUF_LEN 20 // enlarge this if you need more chars
 
+#define MAX_DOUBLE_DIGITS 7
+
 typedef struct {
   uint8_t state;
   char at_str[AT_BUF_LEN + 1];
@@ -31,6 +33,8 @@ typedef struct {
   stream_value_read_callback callback;
   void* context;
 } json_parsing_context_state;
+
+static int print_encoded_string(Print* print, const char* str);
 
 M2XStreamClient::M2XStreamClient(Client* client,
                                  const char* key,
@@ -54,7 +58,7 @@ int M2XStreamClient::send(const char* feedId,
                     _null_print.print(value) + 6);
 
     _client->print("value=");
-    // value is a double, does not need encoding, either
+    // value is a double, does not need encoding
     _client->print(value);
   } else {
 #ifdef DEBUG
@@ -78,7 +82,7 @@ int M2XStreamClient::send(const char* feedId,
                     _null_print.print(value) + 6);
 
     _client->print("value=");
-    // value is a double, does not need encoding, either
+    // value is a long, does not need encoding
     _client->print(value);
   } else {
 #ifdef DEBUG
@@ -102,7 +106,7 @@ int M2XStreamClient::send(const char* feedId,
                     _null_print.print(value) + 6);
 
     _client->print("value=");
-    // value is a double, does not need encoding, either
+    // value is an int, does not need encoding
     _client->print(value);
   } else {
 #ifdef DEBUG
@@ -126,8 +130,7 @@ int M2XStreamClient::send(const char* feedId,
                     _null_print.print(value) + 6);
 
     _client->print("value=");
-    // value is a double, does not need encoding, either
-    printEncodedString(value);
+    print_encoded_string(_client, value);
   } else {
 #ifdef DEBUG
     Serial.println("ERROR: Cannot connect to M2X server!");
@@ -145,23 +148,12 @@ int M2XStreamClient::receive(const char* feedId, const char* streamName,
     Serial.println("Connected to M2X server!");
 #endif
     _client->print("GET /v1/feeds/");
-    printEncodedString(feedId);
+    print_encoded_string(_client, feedId);
     _client->print("/streams/");
-    printEncodedString(streamName);
+    print_encoded_string(_client, streamName);
     _client->println("/values HTTP/1.0");
 
-    _client->println(kUserAgentLine);
-    _client->print("X-M2X-KEY: ");
-    _client->println(_key);
-    _client->print("Host: ");
-    printEncodedString(_host);
-    if (_port != kDefaultM2XPort) {
-      _client->print(":");
-      // port is an integer, does not need encoding
-      _client->print(_port);
-    }
-    _client->println();
-    _client->println();
+    writeHttpHeader(-1);
   } else {
 #ifdef DEBUG
     Serial.println("ERROR: Cannot connect to M2X server!");
@@ -177,33 +169,144 @@ int M2XStreamClient::receive(const char* feedId, const char* streamName,
   return status;
 }
 
+static int print_encoded_string(Print* print, const char* str) {
+  int bytes = 0;
+  for (int i = 0; str[i] != 0; i++) {
+    if (((str[i] >= 'A') && (str[i] <= 'Z')) ||
+        ((str[i] >= 'a') && (str[i] <= 'z')) ||
+        ((str[i] >= '0') && (str[i] <= '9')) ||
+        (str[i] == '-') || (str[i] == '_') ||
+        (str[i] == '.') || (str[i] == '~')) {
+      bytes += print->print(str[i]);
+    } else {
+      // Encode all other characters
+      bytes += print->print('%');
+      bytes += print->print(HEX(str[i] / 16));
+      bytes += print->print(HEX(str[i] % 16));
+    }
+  }
+  return bytes;
+}
+
+static int write_location_data(Print* print, const char* name,
+                               double latitude, double longitude,
+                               double elevation) {
+  int bytes = 0;
+  bytes += print->print("name=");
+  bytes += print_encoded_string(print, name);
+  bytes += print->print("&latitude=");
+  bytes += print->print(latitude, MAX_DOUBLE_DIGITS);
+  bytes += print->print("&longitude=");
+  bytes += print->print(longitude, MAX_DOUBLE_DIGITS);
+  bytes += print->print("&elevation=");
+  bytes += print->print(elevation);
+  return bytes;
+}
+
+static int write_location_data(Print* print, const char* name,
+                               const char* latitude, const char* longitude,
+                               const char* elevation) {
+  int bytes = 0;
+  bytes += print->print("name=");
+  bytes += print_encoded_string(print, name);
+  bytes += print->print("&latitude=");
+  bytes += print_encoded_string(print, latitude);
+  bytes += print->print("&longitude=");
+  bytes += print_encoded_string(print, longitude);
+  bytes += print->print("&elevation=");
+  bytes += print_encoded_string(print, elevation);
+  return bytes;
+}
+
+int M2XStreamClient::updateLocation(const char* feedId,
+                                    const char* name,
+                                    double latitude,
+                                    double longitude,
+                                    double elevation) {
+  if (_client->connect(_host, _port)) {
+#ifdef DEBUG
+    Serial.println("Connected to M2X server!");
+#endif
+
+    int length = write_location_data(&_null_print, name, latitude, longitude,
+                                     elevation);
+    _client->print("PUT /v1/feeds/");
+    print_encoded_string(_client, feedId);
+    _client->println("/location HTTP/1.0");
+
+    writeHttpHeader(length);
+    write_location_data(_client, name, latitude, longitude, elevation);
+  } else {
+#ifdef DEBUG
+    Serial.println("ERROR: Cannot connect to M2X server!");
+#endif
+    return E_NOCONNECTION;
+  }
+  return readStatusCode(true);
+}
+
+int M2XStreamClient::updateLocation(const char* feedId,
+                                    const char* name,
+                                    const char* latitude,
+                                    const char* longitude,
+                                    const char* elevation) {
+  if (_client->connect(_host, _port)) {
+#ifdef DEBUG
+    Serial.println("Connected to M2X server!");
+#endif
+
+    int length = write_location_data(&_null_print, name, latitude, longitude,
+                                     elevation);
+    _client->print("PUT /v1/feeds/");
+    print_encoded_string(_client, feedId);
+    _client->println("/location HTTP/1.0");
+
+    writeHttpHeader(length);
+    write_location_data(_client, name, latitude, longitude, elevation);
+  } else {
+#ifdef DEBUG
+    Serial.println("ERROR: Cannot connect to M2X server!");
+#endif
+    return E_NOCONNECTION;
+  }
+  return readStatusCode(true);
+}
+
 void M2XStreamClient::writeSendHeader(const char* feedId,
                                       const char* streamName,
                                       int contentLength) {
   _client->print("PUT /v1/feeds/");
-  printEncodedString(feedId);
+  print_encoded_string(_client, feedId);
   _client->print("/streams/");
-  printEncodedString(streamName);
+  print_encoded_string(_client, streamName);
   _client->println(" HTTP/1.0");
 
+  writeHttpHeader(contentLength);
+}
+
+void M2XStreamClient::writeHttpHeader(int contentLength) {
   _client->println(kUserAgentLine);
   _client->print("X-M2X-KEY: ");
   _client->println(_key);
+
   _client->print("Host: ");
-  printEncodedString(_host);
+  print_encoded_string(_client, _host);
   if (_port != kDefaultM2XPort) {
     _client->print(":");
     // port is an integer, does not need encoding
     _client->print(_port);
   }
   _client->println();
-  _client->println("Content-Type: application/x-www-form-urlencoded");
+
+  if (contentLength > 0) {
+    _client->println("Content-Type: application/x-www-form-urlencoded");
 #ifdef DEBUG
-  Serial.print("Content Length: ");
-  Serial.println(contentLength);
+    Serial.print("Content Length: ");
+    Serial.println(contentLength);
 #endif
-  _client->print("Content-Length: ");
-  _client->println(contentLength);
+    _client->print("Content-Length: ");
+    _client->println(contentLength);
+  }
   _client->println();
 }
 
@@ -328,24 +431,6 @@ void M2XStreamClient::close() {
   // Eats up buffered data before closing
   _client->flush();
   _client->stop();
-}
-
-
-void M2XStreamClient::printEncodedString(const char* str) {
-  for (int i = 0; str[i] != 0; i++) {
-    if (((str[i] >= 'A') && (str[i] <= 'Z')) ||
-        ((str[i] >= 'a') && (str[i] <= 'z')) ||
-        ((str[i] >= '0') && (str[i] <= '9')) ||
-        (str[i] == '-') || (str[i] == '_') ||
-        (str[i] == '.') || (str[i] == '~')) {
-      _client->print(str[i]);
-    } else {
-      // Encode all other characters
-      _client->print('%');
-      _client->print(HEX(str[i] / 16));
-      _client->print(HEX(str[i] % 16));
-    }
-  }
 }
 
 static void on_key_found(jsonlite_callback_context* context,
