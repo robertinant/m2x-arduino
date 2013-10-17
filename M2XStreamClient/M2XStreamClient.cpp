@@ -5,8 +5,6 @@
 #include "StreamParseFunctions.h"
 #include "LocationParseFunctions.h"
 
-#include "MemoryFree.h"
-
 #define HEX(t_) ((char) (((t_) > 9) ? ((t_) - 10 + 'A') : ((t_) + '0')))
 #define MAX_DOUBLE_DIGITS 7
 
