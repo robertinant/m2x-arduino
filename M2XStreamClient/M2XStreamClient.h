@@ -1,6 +1,8 @@
 #ifndef M2XStreamClient_h
 #define M2XStreamClient_h
 
+#define MIN(a, b) (((a) > (b))?(b):(a))
+
 #include "Arduino.h"
 #include "Client.h"
 #include "NullPrint.h"
@@ -12,7 +14,18 @@ static const int E_NOTREACHABLE = -3;
 static const int E_INVALID = -4;
 static const int E_JSON_INVALID = -5;
 
-typedef void (*stream_value_read_callback)(const char* at, const char* value, int index, void* context);
+typedef void (*stream_value_read_callback)(const char* at,
+                                           const char* value,
+                                           int index,
+                                           void* context);
+
+typedef void (*location_read_callback)(const char* name,
+                                       double latitude,
+                                       double longitude,
+                                       double elevation,
+                                       const char* timestamp,
+                                       int index,
+                                       void* context);
 
 class M2XStreamClient {
 public:
@@ -50,6 +63,8 @@ public:
   int updateLocation(const char* feedId, const char* name,
                      const char* latitude, const char* longitude,
                      const char* elevation);
+  int readLocation(const char* feedId, location_read_callback callback,
+                   void* context);
 private:
   Client* _client;
   const char* _key;
@@ -68,6 +83,7 @@ private:
   void printEncodedString(const char* str);
   void close();
   int readStreamValue(stream_value_read_callback callback, void* context);
+  int readLocation(location_read_callback callback, void* context);
 };
 
 #endif  /* M2XStreamClient_h */

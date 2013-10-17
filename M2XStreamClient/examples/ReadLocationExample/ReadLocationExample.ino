@@ -3,29 +3,39 @@
 
 #include "M2XStreamClient.h"
 
-char ssid[] = "NETGEAR93"; //  your network SSID (name)
-char pass[] = "basiccream298";    // your network password (use for WPA, or use as key for WEP)
+char ssid[] = "<ssid>"; //  your network SSID (name)
+char pass[] = "<WPA password>";    // your network password (use for WPA, or use as key for WEP)
 int keyIndex = 0;            // your network key Index number (needed only for WEP)
 
 int status = WL_IDLE_STATUS;
-// use the numeric IP instead of the name for the server:
-char server[] = "192.168.1.4";    // name address server
-int port = 9393;
+char server[] = "api-m2x.att.com";    // M2X API server
+int port = 80;
 
-char feedId[] = "37a1813b03d46e672b9040de6abf0f73";
-char streamName[] = "temperature";
-char m2xKey[] = "1e56f68dfd3fc3ad4f129facb6b831b4";
+char feedId[] = "<feed id>"; // Feed you want to post to
+char m2xKey[] = "<M2X access key>"; // Your M2X access key
 
 WiFiClient client;
 M2XStreamClient m2xClient(&client, m2xKey, server, port);
 
-void on_data_point_found(const char* at, const char* value, int index, void* context) {
-  Serial.print("Found a data point, index:");
+void on_location_found(const char* name,
+                       double latitude,
+                       double longitude,
+                       double elevation,
+                       const char* timestamp,
+                       int index,
+                       void* context) {
+  Serial.print("Found a location, index:");
   Serial.println(index);
-  Serial.print("At:");
-  Serial.println(at);
-  Serial.print("Value:");
-  Serial.println(value);
+  Serial.print("Name: ");
+  Serial.println(name);
+  Serial.print("Latitude: ");
+  Serial.println(latitude);
+  Serial.print("Longitude: ");
+  Serial.println(longitude);
+  Serial.print("Elevation: ");
+  Serial.println(elevation);
+  Serial.print("Timestamp: ");
+  Serial.println(timestamp);
 }
 
 void setup() {
@@ -53,7 +63,7 @@ void setup() {
 }
 
 void loop() {
-  int response = m2xClient.receive(feedId, streamName, on_data_point_found, NULL);
+  int response = m2xClient.readLocation(feedId, on_location_found, NULL);
   Serial.print("M2x client response code: ");
   Serial.println(response);
 
