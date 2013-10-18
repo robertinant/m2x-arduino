@@ -1,6 +1,8 @@
 #ifndef LocationParseFunctions_h
 #define LocationParseFunctions_h
 
+// Data structures and functions used to parse locations
+
 #define LOCATION_BUF_LEN 20
 
 typedef struct {

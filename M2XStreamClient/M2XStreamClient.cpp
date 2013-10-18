@@ -173,6 +173,8 @@ int M2XStreamClient::readLocation(const char* feedId,
   return status;
 }
 
+// Encodes and prints string using Percent-encoding specified
+// in RFC 1738, Section 2.2
 static int print_encoded_string(Print* print, const char* str) {
   int bytes = 0;
   for (int i = 0; str[i] != 0; i++) {

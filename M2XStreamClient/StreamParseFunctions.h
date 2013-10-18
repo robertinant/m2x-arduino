@@ -1,6 +1,8 @@
 #ifndef StreamParseFunctions_h
 #define StreamParseFunctions_h
 
+// Data structures and functions used to parse stream values
+
 #define STREAM_BUF_LEN 20
 
 typedef struct {
