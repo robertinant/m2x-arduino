@@ -2,37 +2,14 @@
 
 #include "utility/jsonlite_parser.h"
 
+#include "StreamParseFunctions.h"
+#include "LocationParseFunctions.h"
+
 #define HEX(t_) ((char) (((t_) > 9) ? ((t_) - 10 + 'A') : ((t_) + '0')))
+#define MAX_DOUBLE_DIGITS 7
 
 const char* M2XStreamClient::kDefaultM2XHost = "api-m2x.att.com";
 const char* kUserAgentLine = "User-Agent: M2X Arduino Client/0.1";
-
-#define WAITING_AT 0x1
-#define GOT_AT 0x2
-#define WAITING_VALUE 0x4
-#define GOT_VALUE 0x8
-
-#define TEST_GOT_ALL(state_) (((state_) & (GOT_AT | GOT_VALUE)) == \
-                              (GOT_AT | GOT_VALUE))
-
-#define TEST_IS_AT(state_) (((state_) & (WAITING_AT | GOT_AT)) == WAITING_AT)
-#define TEST_IS_VALUE(state_) (((state_) & (WAITING_VALUE | GOT_VALUE)) == \
-                               WAITING_VALUE)
-
-#define AT_BUF_LEN 20
-#define VALUE_BUF_LEN 20 // enlarge this if you need more chars
-
-#define MAX_DOUBLE_DIGITS 7
-
-typedef struct {
-  uint8_t state;
-  char at_str[AT_BUF_LEN + 1];
-  char value_str[VALUE_BUF_LEN + 1];
-  int index;
-
-  stream_value_read_callback callback;
-  void* context;
-} json_parsing_context_state;
 
 static int print_encoded_string(Print* print, const char* str);
 
@@ -161,8 +138,35 @@ int M2XStreamClient::receive(const char* feedId, const char* streamName,
     return E_NOCONNECTION;
   }
   int status = readStatusCode(false);
-  if ((status >= 200) && (status <= 299)) {
+  if (status == 200) {
     readStreamValue(callback, context);
+  }
+
+  close();
+  return status;
+}
+
+int M2XStreamClient::readLocation(const char* feedId,
+                                  location_read_callback callback,
+                                  void* context) {
+  if (_client->connect(_host, _port)) {
+#ifdef DEBUG
+    Serial.println("Connected to M2X server!");
+#endif
+    _client->print("GET /v1/feeds/");
+    print_encoded_string(_client, feedId);
+    _client->println("/location HTTP/1.0");
+
+    writeHttpHeader(-1);
+  } else {
+#ifdef DEBUG
+    Serial.println("ERROR: Cannot connect to M2X server!");
+#endif
+    return E_NOCONNECTION;
+  }
+  int status = readStatusCode(false);
+  if (status == 200) {
+    readLocation(callback, context);
   }
 
   close();
@@ -433,56 +437,9 @@ void M2XStreamClient::close() {
   _client->stop();
 }
 
-static void on_key_found(jsonlite_callback_context* context,
-                         jsonlite_token* token)
-{
-  json_parsing_context_state* state =
-      (json_parsing_context_state*) context->client_state;
-  if (strncmp((const char*) token->start, "at", 2) == 0) {
-    state->state |= WAITING_AT;
-  } else if ((strncmp((const char*) token->start, "value", 5) == 0) &&
-             (token->start[5] != 's')) { // get rid of "values"
-    state->state |= WAITING_VALUE;
-  }
-}
-
-static void on_string_found(jsonlite_callback_context* context,
-                            jsonlite_token* token)
-{
-  json_parsing_context_state* state =
-      (json_parsing_context_state*) context->client_state;
-  char* buf = NULL;
-  uint8_t mask = 0;
-  int buf_len = 0;
-
-  if (TEST_IS_AT(state->state)) {
-    buf = state->at_str;
-    mask = GOT_AT;
-    buf_len = AT_BUF_LEN;
-  } else if (TEST_IS_VALUE(state->state)) {
-    buf = state->value_str;
-    mask = GOT_VALUE;
-    buf_len = VALUE_BUF_LEN;
-  }
-  if (buf) {
-    if (buf_len > (token->end - token->start)) {
-      buf_len = token->end - token->start;
-    }
-    strncpy(buf, (const char*) token->start, buf_len);
-    buf[buf_len] = '\0';
-    state->state |= mask;
-  }
-
-  if (TEST_GOT_ALL(state->state)) {
-    state->callback(state->at_str, state->value_str,
-                    state->index++, state->context);
-    state->state = state->at_str[0] = state->value_str[0] = 0;
-  }
-}
-
 int M2XStreamClient::readStreamValue(stream_value_read_callback callback,
-                                      void* context) {
-  static const int BUF_LEN = 32;
+                                     void* context) {
+#define BUF_LEN 32
   char buf[BUF_LEN];
 
   int length = readContentLength();
@@ -498,14 +455,86 @@ int M2XStreamClient::readStreamValue(stream_value_read_callback callback,
   }
   index = 0;
 
-  json_parsing_context_state state;
-  state.state = state.index = state.at_str[0] = state.value_str[0] = 0;
+  stream_parsing_context_state state;
+  state.state = state.index = 0;
   state.callback = callback;
   state.context = context;
 
   jsonlite_parser_callbacks cbs = jsonlite_default_callbacks;
-  cbs.key_found = on_key_found;
-  cbs.string_found = on_string_found;
+  cbs.key_found = on_stream_key_found;
+  cbs.string_found = on_stream_string_found;
+  cbs.context.client_state = &state;
+
+  jsonlite_parser p = jsonlite_parser_init(jsonlite_parser_estimate_size(5));
+  jsonlite_parser_set_callback(p, &cbs);
+
+  jsonlite_result result = jsonlite_result_unknown;
+  while (index < length) {
+    int i = 0;
+
+#ifdef DEBUG
+    Serial.print("Received Data: ");
+#endif
+    while ((i < BUF_LEN) && _client->available()) {
+      buf[i++] = _client->read();
+#ifdef DEBUG
+      Serial.print(buf[i - 1]);
+#endif
+    }
+#ifdef DEBUG
+    Serial.println();
+#endif
+
+    if ((!_client->connected()) &&
+        (!_client->available()) &&
+        ((index + i) < length)) {
+      jsonlite_parser_release(p);
+      close();
+      return E_NOCONNECTION;
+    }
+
+    result = jsonlite_parser_tokenize(p, buf, i);
+    if ((result != jsonlite_result_ok) &&
+        (result != jsonlite_result_end_of_stream)) {
+      jsonlite_parser_release(p);
+      close();
+      return E_JSON_INVALID;
+    }
+
+    index += i;
+  }
+
+  jsonlite_parser_release(p);
+  close();
+  return (result == jsonlite_result_ok) ? (E_OK) : (E_JSON_INVALID);
+}
+
+int M2XStreamClient::readLocation(location_read_callback callback,
+                                  void* context) {
+#define BUF_LEN 40
+  char buf[BUF_LEN];
+
+  int length = readContentLength();
+  if (length < 0) {
+    close();
+    return length;
+  }
+
+  int index = skipHttpHeader();
+  if (index != E_OK) {
+    close();
+    return index;
+  }
+  index = 0;
+
+  location_parsing_context_state state;
+  state.state = state.index = 0;
+  state.callback = callback;
+  state.context = context;
+
+  jsonlite_parser_callbacks cbs = jsonlite_default_callbacks;
+  cbs.key_found = on_location_key_found;
+  cbs.string_found = on_location_string_found;
   cbs.context.client_state = &state;
 
   jsonlite_parser p = jsonlite_parser_init(jsonlite_parser_estimate_size(5));
