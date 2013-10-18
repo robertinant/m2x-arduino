@@ -138,7 +138,7 @@ int M2XStreamClient::receive(const char* feedId, const char* streamName,
     return E_NOCONNECTION;
   }
   int status = readStatusCode(false);
-  if ((status >= 200) && (status <= 299)) {
+  if (status == 200) {
     readStreamValue(callback, context);
   }
 
@@ -165,7 +165,7 @@ int M2XStreamClient::readLocation(const char* feedId,
     return E_NOCONNECTION;
   }
   int status = readStatusCode(false);
-  if ((status >= 200) && (status <= 299)) {
+  if (status == 200) {
     readLocation(callback, context);
   }
 
