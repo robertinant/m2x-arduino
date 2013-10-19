@@ -1,6 +1,6 @@
 #include "M2XStreamClient.h"
 
-#include "utility/jsonlite_parser.h"
+#include "utility/jsonlite.h"
 
 #include "StreamParseFunctions.h"
 #include "LocationParseFunctions.h"
