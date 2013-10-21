@@ -10,16 +10,13 @@ byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 // Set the static IP address to use if the DHCP fails to assign
 IPAddress ip(192,168,1,17);
 
-char server[] = "api-m2x.att.com";    // M2X API server
-int port = 80;
-
 char feedId[] = "<feed id>"; // Feed you want to post to
 char streamName[] = "<stream name>"; // Stream you want to post to
 char m2xKey[] = "<M2X access key>"; // Your M2X access key
 
 const int temperaturePin = 0;
 EthernetClient client;
-M2XStreamClient m2xClient(&client, m2xKey, server, port);
+M2XStreamClient m2xClient(&client, m2xKey);
 
 void setup() {
   Serial.begin(9600);

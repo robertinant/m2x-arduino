@@ -9,8 +9,6 @@ char pass[] = "<WPA password>";    // your network password (use for WPA, or use
 int keyIndex = 0;            // your network key Index number (needed only for WEP)
 
 int status = WL_IDLE_STATUS;
-char server[] = "api-m2x.att.com";    // M2X API server
-int port = 80;
 
 char feedId[] = "<feed id>"; // Feed you want to post to
 char m2xKey[] = "<M2X access key>"; // Your M2X access key
@@ -21,7 +19,7 @@ double longitude = -57.54787; // You can also read those values from a GPS
 double elevation = 15;
 
 WiFiClient client;
-M2XStreamClient m2xClient(&client, m2xKey, server, port);
+M2XStreamClient m2xClient(&client, m2xKey);
 
 void setup() {
   Serial.begin(9600);
