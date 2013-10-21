@@ -1,3 +1,4 @@
+#include <jsonlite.h>
 #include <SPI.h>
 #include <WiFi.h>
 
