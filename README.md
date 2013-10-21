@@ -56,18 +56,6 @@ For a newer Ethernet Shield, the MAC address should be printed on a sticker on t
 
 The IP address here is only used when DHCP fails to give a valid IP address. It is recommended, though not required, to provide a unique IP address here.
 
-Connecting Server
------------------
-
-The following variables are used to specify which server we are connecting:
-
-```
-char server[] = "api-m2x.att.com";
-int port = 80;
-```
-
-In most cases, you can leave the default values here. This only needs changes when we are using some backup servers here.
-
 M2X API Key
 -----------
 
@@ -106,14 +94,14 @@ The M2X Arduino library can be used with both Wifi connection and Ethernet conne
 
 ```
 WiFiClient client;
-M2XStreamClient m2xClient(&client, m2xKey, server, port);
+M2XStreamClient m2xClient(&client, m2xKey);
 ```
 
 For an Ethernet connection, use the following code:
 
 ```
 EthernetClient client;
-M2XStreamClient m2xClient(&client, m2xKey, server, port);
+M2XStreamClient m2xClient(&client, m2xKey);
 ```
 
 In the M2XStreamClient, 4 types of API functions are provided here:
