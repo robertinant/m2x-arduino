@@ -10,7 +10,7 @@ Getting Started
 2. Obtain your _Master Key_ from your [Account Settings](https://m2x.att.com/account) screen.
 2. Create your first [Data Source Blueprint](https://m2x.att.com/blueprints) and copy its _Feed ID_.
 3. Review the [M2X API Documentation](https://m2x.att.com/developer/documentation/overview).
-4. Obtain an Arduino with built in wifi or ethernet, or a separate wifi or ethernet shield and [set it up](http://arduino.cc/en/Guide/HomePage).
+4. Obtain an Arduino with built in wifi or ethernet, or a separate wifi or ethernet shield and [set it up](http://arduino.cc/en/Guide/HomePage). These docs were written for an [Arduino Uno](http://arduino.cc/en/Main/arduinoBoardUno) but the instructions can be adapted for other Arduino models.
 
 Please consult the [M2X glossary](https://m2x.att.com/developer/documentation/glossary) if you have questions about any M2X specific terms.
 
