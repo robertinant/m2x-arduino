@@ -12,7 +12,7 @@ Getting Started
 3. Review the [M2X API Documentation](https://m2x.att.com/developer/documentation/overview)
 4. Obtain an Arduino with built in wifi or ethernet, or a separate wifi or ethernet shield and [set it up](http://arduino.cc/en/Guide/HomePage).
 
-Please consult the [M2X glossary](https://m2x.att.com/developer/documentation/glossary) if you have questions about any of the M2X specific terms.
+Please consult the [M2X glossary](https://m2x.att.com/developer/documentation/glossary) if you have questions about any M2X specific terms.
 
 How to Install the library
 ==========================
