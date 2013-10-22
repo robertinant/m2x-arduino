@@ -43,6 +43,8 @@ The Arduino website has a very good [tutorial](http://arduino.cc/en/Guide/HomePa
 Wifi/Ethernet Shield Setup
 --------------------------
 
+If you are using an [Arduino Yun](http://arduino.cc/en/Main/ArduinoBoardYun) board instead of an [Arduino Uno](http://arduino.cc/en/Main/ArduinoBoardUno) board, you can skip this section since the Yun board already has Wifi adapter on board.
+
 To send data to the AT&amp;T M2X service, or receive data from the AT&amp;T M2X service, your Arduino board needs a connection to the Internet. Hence an Arduino [Wifi Shield](http://arduino.cc/en/Main/ArduinoWiFiShield) or [Ethernet Shield](http://arduino.cc/en/Main/ArduinoEthernetShield) is needed to give your board the power to connect to the Internet. To install the shield, hook the shield on your Arduino board — you can use the pins on the shield the same way as the real pins on the Arduino boards.
 
 Sensor Setup
@@ -124,6 +126,13 @@ For an Ethernet connection, use the following code:
 
 ```
 EthernetClient client;
+M2XStreamClient m2xClient(&client, m2xKey);
+```
+
+If you are using an [Arduino Yun](http://arduino.cc/en/Main/ArduinoBoardYun) board specifically, you should use the following code:
+
+```
+YunClient client;
 M2XStreamClient m2xClient(&client, m2xKey);
 ```
 
@@ -270,4 +279,9 @@ ReadLocationExample
 -------------------
 
 This one reads location data of a feed from M2X server, and prints them to Serial interfact. You can check the output in the `Serial Monitor` of the Arduino IDE.
+
+YunPostExample
+--------------
+
+This example works like `PostExample`, except that it works on an [Arduino Yun](http://arduino.cc/en/Main/ArduinoBoardYun) board instead of an [Arduino Uno](http://arduino.cc/en/Main/arduinoBoardUno) board.
 
