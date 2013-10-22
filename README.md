@@ -9,13 +9,25 @@ How to Install the library
 This library depends on [jsonlite](https://github.com/amamchur/jsonlite), the installation steps are as follows:
 
 1. Clone the [jsonlite](https://github.com/amamchur/jsonlite) repository.
-2. Open the Arduino app, click `Sketch->Import Library...->Add Library...`, then navigate to `amalgamated/jsonlite` folder in the cloned jsonlite repository. The jsonlite library will be imported to Arduino this way.
+2. Open the Arduino IDE, click `Sketch->Import Library...->Add Library...`, then navigate to `amalgamated/jsonlite` folder in the cloned jsonlite repository. The jsonlite library will be imported to Arduino this way.
+
+   **NOTE**: If you cloned the jsonlite library, there will be 3 folders named jsonlite:
+   * `jsonlite`: the repo folder
+   * `jsonlite/jsonlite`: the un-flattened jsonlite source folder
+   * `jsonlite/amalgamated/jsonlite`: the flattened jsonlite source for arduino
+
+   The last one here should be the one to use, the first 2 won't work!
 3. Use the same way as #2 to import `M2XStreamClient` library in the current folder.
 4. Now you can find M2X examples under `File->Examples->M2XStreamClient`
 5. Enjoy coding!
 
+Hardware Setup
+==============
+
 Board Setup
-===========
+-----------
+
+The Arduino website has a very good [tutorial](http://arduino.cc/en/Guide/HomePage) on setting up the Arduino board. It contains detailed instructions on how to install the Arduino IDE, sets up your board for initial testing. Feel free to proceed to the [Arduino site](http://arduino.cc/en/Guide/HomePage) to get a basic idea on Arduino.
 
 Wifi/Ethernet Shield Setup
 --------------------------
@@ -216,7 +228,7 @@ Note that the examples contain fictionary variables, they need to be configured 
 
 In the `PostExample` and `EthernetPostExample`, a temperature sensor, a breadboard and 5 wires are also needed to get data of the temperature, you need to wire the board like [this](http://cl.ly/image/3M0P3T1A0G0l) before running the code.
 
-After you have configured variables and the board, plug the Arduino board onto your computer via a Micro-USB cable, click `Verify` in the Arduino app, then click `Upload`, the code should be uploaded to the board. You can check all the outputs in the `Serial Monitor` of the Arduino IDE.`
+After you have configured variables and the board, plug the Arduino board onto your computer via a Micro-USB cable, click `Verify` in the Arduino IDE, then click `Upload`, the code should be uploaded to the board. You can check all the outputs in the `Serial Monitor` of the Arduino IDE.`
 
 PostExample
 -----------
@@ -246,5 +258,5 @@ This one sends location data to M2X server. Idealy a GPS device should be used h
 ReadLocationExample
 -------------------
 
-This one reads location data of a feed from M2X server, and prints them to Serial interfact. You can check the output in the `Serial Monitor` of the Arduino app.
+This one reads location data of a feed from M2X server, and prints them to Serial interfact. You can check the output in the `Serial Monitor` of the Arduino IDE.
 
