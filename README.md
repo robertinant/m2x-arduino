@@ -28,7 +28,7 @@ This library depends on [jsonlite](https://github.com/amamchur/jsonlite), the in
    * `jsonlite/amalgamated/jsonlite`: the flattened jsonlite source for arduino
 
    The last one here should be the one to use, the first 2 won't work!
-3. Use the same way as #2 to import `M2XStreamClient` library in the current folder.
+3. Use the instructions outlined in Step 2 above to import the `M2XStreamClient` library in the current folder.
 4. Now you can find M2X examples under `File->Examples->M2XStreamClient`
 5. Enjoy coding!
 
