@@ -3,6 +3,16 @@ m2x-arduino
 
 The Arduino library used to send/receive data to/from [AT&amp;T's M2X service](https://m2x.att.com/).
 
+
+Getting Started
+==========================
+1. Signup for an [M2X Account](https://m2x.att.com/signup).
+2. Obtain your master key from your [Account Settings](https://m2x.att.com/account) screen.
+2. Create your first [data source blueprint](https://m2x.att.com/blueprints) and obtain your Feed ID.
+3. Review the [M2X API Documentation](https://m2x.att.com/developer/documentation/overview)
+4. Obtain an Arduino with built in wifi or ethernet, or a separate wifi or ethernet shield.
+
+
 How to Install the library
 ==========================
 
