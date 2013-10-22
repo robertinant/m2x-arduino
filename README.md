@@ -7,7 +7,7 @@ The Arduino library is used to send/receive data to/from [AT&amp;T's M2X service
 Getting Started
 ==========================
 1. Signup for an [M2X Account](https://m2x.att.com/signup).
-2. Obtain your _Master Key_ from your [Account Settings](https://m2x.att.com/account) screen.
+2. Obtain your _Master Key_ from the Master Keys tab of your [Account Settings](https://m2x.att.com/account) screen.
 2. Create your first [Data Source Blueprint](https://m2x.att.com/blueprints) and copy its _Feed ID_.
 3. Review the [M2X API Documentation](https://m2x.att.com/developer/documentation/overview).
 4. Obtain an Arduino with built in wifi or ethernet, or a separate wifi or ethernet shield and [set it up](http://arduino.cc/en/Guide/HomePage). These docs were written for an [Arduino Uno](http://arduino.cc/en/Main/arduinoBoardUno) but the instructions can be adapted for other Arduino models.
