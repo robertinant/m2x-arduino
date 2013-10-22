@@ -1,15 +1,15 @@
 m2x-arduino
 ===========
 
-The Arduino library used to send/receive data to/from [AT&amp;T's M2X service](https://m2x.att.com/).
+The Arduino library is used to send/receive data to/from [AT&amp;T's M2X service](https://m2x.att.com/) from [Arduino](http://www.arduino.cc/) based devices.
 
 
 Getting Started
 ==========================
 1. Signup for an [M2X Account](https://m2x.att.com/signup).
-2. Obtain your master key from your [Account Settings](https://m2x.att.com/account) screen.
-2. Create your first [data source blueprint](https://m2x.att.com/blueprints) and obtain your Feed ID.
-3. Review the [M2X API Documentation](https://m2x.att.com/developer/documentation/overview)
+2. Obtain your _Master Key_ from your [Account Settings](https://m2x.att.com/account) screen.
+2. Create your first [Data Source Blueprint](https://m2x.att.com/blueprints) and copy its _Feed ID_.
+3. Review the [M2X API Documentation](https://m2x.att.com/developer/documentation/overview).
 4. Obtain an Arduino with built in wifi or ethernet, or a separate wifi or ethernet shield and [set it up](http://arduino.cc/en/Guide/HomePage).
 
 Please consult the [M2X glossary](https://m2x.att.com/developer/documentation/glossary) if you have questions about any M2X specific terms.
@@ -233,13 +233,13 @@ int readLocation(const char* feedId, location_read_callback callback,
 Examples
 ========
 
-We provide a series of examples. By reading these examples, we believe that you can get an idea of how to use the `M2XStreamClient` library to perform all kinds of tasks.
+We provide a series of examples that will help you get an idea of how to use the `M2XStreamClient` library to perform all kinds of tasks.
 
-Note that the examples contain fictionary variables, they need to be configured as the description above said before running on the Arduino board. Each of the examples here also needs either a Wifi Shield or an Ethernet Shield hooked on your device.
+Note that the examples contain fictionary variables, and that they need to be configured as per the instructions above before running on your Arduino board. Each of the examples here also needs either a Wifi Shield or an Ethernet Shield hooked up to your device.
 
-In the `PostExample` and `EthernetPostExample`, a temperature sensor, a breadboard and 5 wires are also needed to get data of the temperature, you need to wire the board like [this](http://cl.ly/image/3M0P3T1A0G0l) before running the code.
+In the `PostExample` and `EthernetPostExample`, a temperature sensor, a breadboard and 5 wires are also needed to get temperature data, you need to wire the board like [this](http://cl.ly/image/3M0P3T1A0G0l) before running the code.
 
-After you have configured variables and the board, plug the Arduino board onto your computer via a Micro-USB cable, click `Verify` in the Arduino IDE, then click `Upload`, the code should be uploaded to the board. You can check all the outputs in the `Serial Monitor` of the Arduino IDE.`
+After you have configured your variables and the board, plug the Arduino board into your computer via a Micro-USB cable, click `Verify` in the Arduino IDE, then click `Upload`, and the code should be uploaded to the board. You can check all the outputs in the `Serial Monitor` of the Arduino IDE.`
 
 PostExample
 -----------
