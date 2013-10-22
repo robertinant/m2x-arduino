@@ -10,8 +10,9 @@ Getting Started
 2. Obtain your master key from your [Account Settings](https://m2x.att.com/account) screen.
 2. Create your first [data source blueprint](https://m2x.att.com/blueprints) and obtain your Feed ID.
 3. Review the [M2X API Documentation](https://m2x.att.com/developer/documentation/overview)
-4. Obtain an Arduino with built in wifi or ethernet, or a separate wifi or ethernet shield.
+4. Obtain an Arduino with built in wifi or ethernet, or a separate wifi or ethernet shield and [set it up](http://arduino.cc/en/Guide/HomePage).
 
+Please consult the [M2X glossary](https://m2x.att.com/developer/documentation/glossary) if you have questions about any of the M2X specific terms.
 
 How to Install the library
 ==========================
@@ -42,12 +43,12 @@ The Arduino website has a very good [tutorial](http://arduino.cc/en/Guide/HomePa
 Wifi/Ethernet Shield Setup
 --------------------------
 
-To send data to the AT&amp;T M2X server, or receive data from the AT&amp;T M2X server, your Arduino board needs connection to the Internet. Hence an Arduino [Wifi Shield](http://arduino.cc/en/Main/ArduinoWiFiShield) or [Ethernet Shield](http://arduino.cc/en/Main/ArduinoEthernetShield) is needed to give your board the power to connect to the Internet. To install the shield, hook the shield on your Arduino board, you can use the pins on the shield the same way as the real pins on the Arduino boards.
+To send data to the AT&amp;T M2X service, or receive data from the AT&amp;T M2X service, your Arduino board needs a connection to the Internet. Hence an Arduino [Wifi Shield](http://arduino.cc/en/Main/ArduinoWiFiShield) or [Ethernet Shield](http://arduino.cc/en/Main/ArduinoEthernetShield) is needed to give your board the power to connect to the Internet. To install the shield, hook the shield on your Arduino board — you can use the pins on the shield the same way as the real pins on the Arduino boards.
 
 Sensor Setup
 ------------
 
-Different sensors can be hooked on an Arduino board to provide different properties including temperatures, humidity, etc. You can use a breadboard as well as wires to connect different sensors to your Arduino. For detailed tutorial on connecting different sensors, please refer to the Arduino [Examples page](http://arduino.cc/en/Tutorial/HomePage).
+Different sensors can be hooked up to an Arduino board to provide different properties including temperatures, humidity, etc. You can use a breadboard as well as wires to connect different sensors to your Arduino. For detailed tutorial on connecting different sensors, please refer to the Arduino [Examples page](http://arduino.cc/en/Tutorial/HomePage).
 
 
 Variables used in Examples
