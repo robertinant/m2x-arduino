@@ -177,7 +177,7 @@ Each one here requires a feed ID and a stream name, different types of value can
 Receive stream value
 --------------------
 
-Since Arduino board contains very limited API, we cannot put the whole returned string in memory, parse it into JSON representations and read what we want. Instead, we use a callback-based mechanism here. We parse the returned JSON string piece by piece, whenever we got a new stream value point, we will call the following callback functions:
+Since Arduino board contains very limited memory, we cannot put the whole returned string in memory, parse it into JSON representations and read what we want. Instead, we use a callback-based mechanism here. We parse the returned JSON string piece by piece, whenever we got a new stream value point, we will call the following callback functions:
 
 ```
 void (*stream_value_read_callback)(const char* at,
