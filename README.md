@@ -1,5 +1,5 @@
-m2x-arduino
-===========
+Arduino M2X API Client
+=====================
 
 The Arduino library is used to send/receive data to/from [AT&amp;T's M2X service](https://m2x.att.com/) from [Arduino](http://www.arduino.cc/) based devices.
 
