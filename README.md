@@ -287,3 +287,7 @@ YunPostExample
 
 This example works like `PostExample`, except that it works on an [Arduino Yun](http://arduino.cc/en/Main/ArduinoBoardYun) board instead of an [Arduino Uno](http://arduino.cc/en/Main/arduinoBoardUno) board.
 
+LICENSE
+=======
+
+This library is released under the MIT license. See [`M2XStreamClient/LICENSE`](M2XStreamClient/LICENSE) for the terms.
