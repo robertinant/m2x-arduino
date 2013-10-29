@@ -3,7 +3,16 @@
 
 #define MIN(a, b) (((a) > (b))?(b):(a))
 
+#define ARDUINO_PLATFORM
+
+#ifdef ARDUINO_PLATFORM
 #include "Arduino.h"
+#endif
+
+#ifdef MBED_PLATFORM
+#include "mbed.h"
+#endif
+
 #include "Client.h"
 #include "NullPrint.h"
 
@@ -94,7 +103,7 @@ private:
   void writeSendHeader(const char* feedId,
                        const char* streamName,
                        int contentLength);
-  // Writes HTTP header lines including M2X key, host, content
+  // Writes HTTP header lines including M2X API Key, host, content
   // type and content length(if the body exists)
   void writeHttpHeader(int contentLength);
   // Parses HTTP response header and return the content length.
