@@ -1,6 +1,8 @@
-#include "M2XStreamClient.h"
+#include <jsonlite.h>
 #include <Console.h>
 #include <YunClient.h>
+
+#include "M2XStreamClient.h"
 
 char feedId[] = "<feed id>"; // Feed you want to post to
 char streamName[] = "<stream name>"; // Stream you want to post to
