@@ -47,11 +47,11 @@ int M2XStreamClient::send(const char* feedId,
   if (_client->connect(_host, _port)) {
     DBGLN("%s", "Connected to M2X server!");
     writeSendHeader(feedId, streamName,
-                    // 6 for "value="
-                    _null_print.print(value) + 6);
-    _client->print("value=");
-    // value is a double, does not need encoding
+                    //  for {"value": and }
+                    _null_print.print(value) + 10);
+    _client->print("{\"value\":");
     _client->print(value);
+    _client->print("}");
   } else {
     DBGLN("%s", "ERROR: Cannot connect to M2X server!");
     return E_NOCONNECTION;
@@ -66,12 +66,11 @@ int M2XStreamClient::send(const char* feedId,
   if (_client->connect(_host, _port)) {
     DBGLN("%s", "Connected to M2X server!");
     writeSendHeader(feedId, streamName,
-                    // 6 for "value="
-                    _null_print.print(value) + 6);
-
-    _client->print("value=");
-    // value is a long, does not need encoding
+                    //  for {"value": and }
+                    _null_print.print(value) + 10);
+    _client->print("{\"value\":");
     _client->print(value);
+    _client->print("}");
   } else {
     DBGLN("%s", "ERROR: Cannot connect to M2X server!");
     return E_NOCONNECTION;
@@ -86,12 +85,11 @@ int M2XStreamClient::send(const char* feedId,
   if (_client->connect(_host, _port)) {
     DBGLN("%s", "Connected to M2X server!");
     writeSendHeader(feedId, streamName,
-                    // 6 for "value="
-                    _null_print.print(value) + 6);
-
-    _client->print("value=");
-    // value is an int, does not need encoding
+                    //  for {"value": and }
+                    _null_print.print(value) + 10);
+    _client->print("{\"value\":");
     _client->print(value);
+    _client->print("}");
   } else {
     DBGLN("%s", "ERROR: Cannot connect to M2X server!");
     return E_NOCONNECTION;
@@ -106,11 +104,11 @@ int M2XStreamClient::send(const char* feedId,
   if (_client->connect(_host, _port)) {
     DBGLN("%s", "Connected to M2X server!");
     writeSendHeader(feedId, streamName,
-                    // 6 for "value="
-                    _null_print.print(value) + 6);
-
-    _client->print("value=");
-    print_encoded_string(_client, value);
+                    //  for {"value": and }
+                    _null_print.print(value) + 10);
+    _client->print("{\"value\":");
+    _client->print(value);
+    _client->print("}");
   } else {
     DBGLN("%s", "ERROR: Cannot connect to M2X server!");
     return E_NOCONNECTION;
@@ -191,14 +189,15 @@ static int write_location_data(Print* print, const char* name,
                                double latitude, double longitude,
                                double elevation) {
   int bytes = 0;
-  bytes += print->print("name=");
-  bytes += print_encoded_string(print, name);
-  bytes += print->print("&latitude=");
+  bytes += print->print("{\"name\":\"");
+  bytes += print->print(name);
+  bytes += print->print("\",\"latitude\":\"");
   bytes += print->print(latitude, MAX_DOUBLE_DIGITS);
-  bytes += print->print("&longitude=");
+  bytes += print->print("\",\"longitude\":\"");
   bytes += print->print(longitude, MAX_DOUBLE_DIGITS);
-  bytes += print->print("&elevation=");
+  bytes += print->print("\",\"elevation\":\"");
   bytes += print->print(elevation);
+  bytes += print->print("\"}");
   return bytes;
 }
 
@@ -206,14 +205,15 @@ static int write_location_data(Print* print, const char* name,
                                const char* latitude, const char* longitude,
                                const char* elevation) {
   int bytes = 0;
-  bytes += print->print("name=");
-  bytes += print_encoded_string(print, name);
-  bytes += print->print("&latitude=");
-  bytes += print_encoded_string(print, latitude);
-  bytes += print->print("&longitude=");
-  bytes += print_encoded_string(print, longitude);
-  bytes += print->print("&elevation=");
-  bytes += print_encoded_string(print, elevation);
+  bytes += print->print("{\"name\":\"");
+  bytes += print->print(name);
+  bytes += print->print("\",\"latitude\":\"");
+  bytes += print->print(latitude);
+  bytes += print->print("\",\"longitude\":\"");
+  bytes += print->print(longitude);
+  bytes += print->print("\",\"elevation\":\"");
+  bytes += print->print(elevation);
+  bytes += print->print("\"}");
   return bytes;
 }
 
@@ -290,7 +290,7 @@ void M2XStreamClient::writeHttpHeader(int contentLength) {
   _client->println();
 
   if (contentLength > 0) {
-    _client->println("Content-Type: application/x-www-form-urlencoded");
+    _client->println("Content-Type: application/json");
     DBG("%s", "Content Length: ");
     DBGLN("%d", contentLength);
 
