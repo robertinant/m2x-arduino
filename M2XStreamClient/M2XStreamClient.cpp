@@ -5,31 +5,10 @@
 #include "StreamParseFunctions.h"
 #include "LocationParseFunctions.h"
 
-#ifdef DEBUG
-#ifdef ARDUINO_PLATFORM
-#define DBG(fmt_, data_) Serial.print(data_)
-#define DBGLN(fmt_, data_) Serial.println(data_)
-#define DBGLNEND Serial.println()
-#endif  // ARDUINO_PLATFORM
-
-#ifdef MBED_PLATFORM
-#define DBG(fmt_, data_) printf((fmt_), (data_))
-#define DBGLN(fmt_, data_) printf((fmt_), (data_)); printf("\n")
-#define DBGLNEND printf("\n")
-#endif  // MBED_PLATFORM
-#else
-#define DBG(fmt_, data_)
-#define DBGLN(fmt_, data_)
-#define DBGLNEND
-#endif  // DEBUG
-
-#define HEX(t_) ((char) (((t_) > 9) ? ((t_) - 10 + 'A') : ((t_) + '0')))
-#define MAX_DOUBLE_DIGITS 7
-
 const char* M2XStreamClient::kDefaultM2XHost = "api-m2x.att.com";
 const char* kUserAgentLine = "User-Agent: M2X Arduino Client/0.1";
 
-static int print_encoded_string(Print* print, const char* str);
+int print_encoded_string(Print* print, const char* str);
 
 M2XStreamClient::M2XStreamClient(Client* client,
                                  const char* key,
@@ -39,175 +18,6 @@ M2XStreamClient::M2XStreamClient(Client* client,
                                              _host(host),
                                              _port(port),
                                              _null_print() {
-}
-
-int M2XStreamClient::send(const char* feedId,
-                          const char* streamName,
-                          double value) {
-  if (_client->connect(_host, _port)) {
-    DBGLN("%s", "Connected to M2X server!");
-    writeSendHeader(feedId, streamName,
-                    //  for {"value": and }
-                    _null_print.print(value) + 10);
-    _client->print("{\"value\":");
-    _client->print(value);
-    _client->print("}");
-  } else {
-    DBGLN("%s", "ERROR: Cannot connect to M2X server!");
-    return E_NOCONNECTION;
-  }
-
-  return readStatusCode(true);
-}
-
-int M2XStreamClient::send(const char* feedId,
-                          const char* streamName,
-                          long value) {
-  if (_client->connect(_host, _port)) {
-    DBGLN("%s", "Connected to M2X server!");
-    writeSendHeader(feedId, streamName,
-                    //  for {"value": and }
-                    _null_print.print(value) + 10);
-    _client->print("{\"value\":");
-    _client->print(value);
-    _client->print("}");
-  } else {
-    DBGLN("%s", "ERROR: Cannot connect to M2X server!");
-    return E_NOCONNECTION;
-  }
-
-  return readStatusCode(true);
-}
-
-int M2XStreamClient::send(const char* feedId,
-                          const char* streamName,
-                          int value) {
-  if (_client->connect(_host, _port)) {
-    DBGLN("%s", "Connected to M2X server!");
-    writeSendHeader(feedId, streamName,
-                    //  for {"value": and }
-                    _null_print.print(value) + 10);
-    _client->print("{\"value\":");
-    _client->print(value);
-    _client->print("}");
-  } else {
-    DBGLN("%s", "ERROR: Cannot connect to M2X server!");
-    return E_NOCONNECTION;
-  }
-
-  return readStatusCode(true);
-}
-
-int M2XStreamClient::send(const char* feedId,
-                          const char* streamName,
-                          const char* value) {
-  if (_client->connect(_host, _port)) {
-    DBGLN("%s", "Connected to M2X server!");
-    writeSendHeader(feedId, streamName,
-                    //  for {"value": and }
-                    _null_print.print(value) + 10);
-    _client->print("{\"value\":");
-    _client->print(value);
-    _client->print("}");
-  } else {
-    DBGLN("%s", "ERROR: Cannot connect to M2X server!");
-    return E_NOCONNECTION;
-  }
-
-  return readStatusCode(true);
-}
-
-#define WRITE_MULTIPLE_VALUES_BODY { \
-  int bytes = 0, value_index = 0; \
-  bytes += print->print("{\"values\":{"); \
-  for (int i = 0; i < streamNum; i++) { \
-    bytes += print->print("\""); \
-    bytes += print->print(names[i]); \
-    bytes += print->print("\":["); \
-    for (int j = 0; j < counts[i]; j++) { \
-      bytes += print->print("{"); \
-      if (ats && ats[value_index]) { \
-        bytes += print->print("\"at\": \""); \
-        bytes += print->print(ats[value_index]); \
-        bytes += print->print("\","); \
-      } \
-      bytes += print->print("\"value\": \""); \
-      bytes += print->print(values[value_index]); \
-      bytes += print->print("\"}"); \
-      if (j < counts[i] - 1) { bytes += print->print(","); } \
-      value_index++; \
-    } \
-    bytes += print->print("]"); \
-    if (i < streamNum - 1) { bytes += print->print(","); } \
-  } \
-  bytes += print->print("}}"); \
-  return bytes; \
-  }
-
-static int write_multiple_values(Print* print, int streamNum,
-                                 const char* names[], const int counts[],
-                                 const char* ats[], double values[]) {
-  WRITE_MULTIPLE_VALUES_BODY;
-}
-
-static int write_multiple_values(Print* print, int streamNum,
-                                 const char* names[], const int counts[],
-                                 const char* ats[], int values[]) {
-  WRITE_MULTIPLE_VALUES_BODY;
-}
-
-static int write_multiple_values(Print* print, int streamNum,
-                                 const char* names[], const int counts[],
-                                 const char* ats[], long values[]) {
-  WRITE_MULTIPLE_VALUES_BODY;
-}
-
-static int write_multiple_values(Print* print, int streamNum,
-                                 const char* names[], const int counts[],
-                                 const char* ats[], const char* values[]) {
-  WRITE_MULTIPLE_VALUES_BODY;
-}
-
-#define SEND_MULTIPLE_BODY { \
-  if (_client->connect(_host, _port)) { \
-    DBGLN("%s", "Connected to M2X server!"); \
-    int length = write_multiple_values(&_null_print, streamNum, names, \
-                                       counts, ats, values); \
-    _client->print("POST /v1/feeds/"); \
-    print_encoded_string(_client, feedId); \
-    _client->println(" HTTP/1.0"); \
-    writeHttpHeader(length); \
-    write_multiple_values(_client, streamNum, names, counts, ats, values); \
-  } else { \
-    DBGLN("%s", "ERROR: Cannot connect to M2X server!"); \
-    return E_NOCONNECTION; \
-  } \
-  return readStatusCode(true); \
-  }
-
-
-int M2XStreamClient::sendMultiple(const char* feedId, int streamNum,
-                                  const char* names[], const int counts[],
-                                  const char* ats[], double values[]) {
-  SEND_MULTIPLE_BODY;
-}
-
-int M2XStreamClient::sendMultiple(const char* feedId, int streamNum,
-                                  const char* names[], const int counts[],
-                                  const char* ats[], int values[]) {
-  SEND_MULTIPLE_BODY;
-}
-
-int M2XStreamClient::sendMultiple(const char* feedId, int streamNum,
-                                  const char* names[], const int counts[],
-                                  const char* ats[], long values[]) {
-  SEND_MULTIPLE_BODY;
-}
-
-int M2XStreamClient::sendMultiple(const char* feedId, int streamNum,
-                                  const char* names[], const int counts[],
-                                  const char* ats[], const char* values[]) {
-  SEND_MULTIPLE_BODY;
 }
 
 #define WRITE_QUERY_PART(client_, started_, name_, str_) { \
@@ -281,7 +91,7 @@ int M2XStreamClient::readLocation(const char* feedId,
 
 // Encodes and prints string using Percent-encoding specified
 // in RFC 1738, Section 2.2
-static int print_encoded_string(Print* print, const char* str) {
+int print_encoded_string(Print* print, const char* str) {
   int bytes = 0;
   for (int i = 0; str[i] != 0; i++) {
     if (((str[i] >= 'A') && (str[i] <= 'Z')) ||
@@ -298,84 +108,6 @@ static int print_encoded_string(Print* print, const char* str) {
     }
   }
   return bytes;
-}
-
-static int write_location_data(Print* print, const char* name,
-                               double latitude, double longitude,
-                               double elevation) {
-  int bytes = 0;
-  bytes += print->print("{\"name\":\"");
-  bytes += print->print(name);
-  bytes += print->print("\",\"latitude\":\"");
-  bytes += print->print(latitude, MAX_DOUBLE_DIGITS);
-  bytes += print->print("\",\"longitude\":\"");
-  bytes += print->print(longitude, MAX_DOUBLE_DIGITS);
-  bytes += print->print("\",\"elevation\":\"");
-  bytes += print->print(elevation);
-  bytes += print->print("\"}");
-  return bytes;
-}
-
-static int write_location_data(Print* print, const char* name,
-                               const char* latitude, const char* longitude,
-                               const char* elevation) {
-  int bytes = 0;
-  bytes += print->print("{\"name\":\"");
-  bytes += print->print(name);
-  bytes += print->print("\",\"latitude\":\"");
-  bytes += print->print(latitude);
-  bytes += print->print("\",\"longitude\":\"");
-  bytes += print->print(longitude);
-  bytes += print->print("\",\"elevation\":\"");
-  bytes += print->print(elevation);
-  bytes += print->print("\"}");
-  return bytes;
-}
-
-int M2XStreamClient::updateLocation(const char* feedId,
-                                    const char* name,
-                                    double latitude,
-                                    double longitude,
-                                    double elevation) {
-  if (_client->connect(_host, _port)) {
-    DBGLN("%s", "Connected to M2X server!");
-
-    int length = write_location_data(&_null_print, name, latitude, longitude,
-                                     elevation);
-    _client->print("PUT /v1/feeds/");
-    print_encoded_string(_client, feedId);
-    _client->println("/location HTTP/1.0");
-
-    writeHttpHeader(length);
-    write_location_data(_client, name, latitude, longitude, elevation);
-  } else {
-    DBGLN("%s", "ERROR: Cannot connect to M2X server!");
-    return E_NOCONNECTION;
-  }
-  return readStatusCode(true);
-}
-
-int M2XStreamClient::updateLocation(const char* feedId,
-                                    const char* name,
-                                    const char* latitude,
-                                    const char* longitude,
-                                    const char* elevation) {
-  if (_client->connect(_host, _port)) {
-    DBGLN("%s", "Connected to M2X server!");
-
-    int length = write_location_data(&_null_print, name, latitude, longitude,
-                                     elevation);
-    _client->print("PUT /v1/feeds/");
-    print_encoded_string(_client, feedId);
-    _client->println("/location HTTP/1.0");
-
-    writeHttpHeader(length);
-    write_location_data(_client, name, latitude, longitude, elevation);
-  } else {
-    DBGLN("%s", "ERROR: Cannot connect to M2X server!");
-    return E_NOCONNECTION;
-  }
-  return readStatusCode(true);
 }
 
 void M2XStreamClient::writeSendHeader(const char* feedId,

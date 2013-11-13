@@ -10,7 +10,6 @@ char pass[] = "<WPA password>";    // your network password (use for WPA, or use
 int status = WL_IDLE_STATUS;
 
 char feedId[] = "<feed id>"; // Feed you want to post to
-char streamName[] = "<stream name>"; // Stream you want to post to
 char m2xKey[] = "<M2X access key>"; // Your M2X access key
 
 const char *streamNames[] = { "temperature", "humidity" };
@@ -19,7 +18,7 @@ const char *ats[] = { "2013-09-09T19:15:00Z", NULL, NULL };
 double values[] = { 10.0, 20.0, 7.5 };
 
 WiFiClient client;
-M2XStreamClient m2xClient(&client, m2xKey, "192.168.1.4", 9393);
+M2XStreamClient m2xClient(&client, m2xKey);
 
 void setup() {
   Serial.begin(9600);

@@ -16,6 +16,27 @@
 #include "Client.h"
 #include "NullPrint.h"
 
+#ifdef DEBUG
+#ifdef ARDUINO_PLATFORM
+#define DBG(fmt_, data_) Serial.print(data_)
+#define DBGLN(fmt_, data_) Serial.println(data_)
+#define DBGLNEND Serial.println()
+#endif  // ARDUINO_PLATFORM
+
+#ifdef MBED_PLATFORM
+#define DBG(fmt_, data_) printf((fmt_), (data_))
+#define DBGLN(fmt_, data_) printf((fmt_), (data_)); printf("\n")
+#define DBGLNEND printf("\n")
+#endif  // MBED_PLATFORM
+#else
+#define DBG(fmt_, data_)
+#define DBGLN(fmt_, data_)
+#define DBGLNEND
+#endif  // DEBUG
+
+#define HEX(t_) ((char) (((t_) > 9) ? ((t_) - 10 + 'A') : ((t_) + '0')))
+#define MAX_DOUBLE_DIGITS 7
+
 static const int E_OK = 0;
 static const int E_NOCONNECTION = -1;
 static const int E_DISCONNECTED = -2;
@@ -47,10 +68,8 @@ public:
                   int port = kDefaultM2XPort);
 
   // Update data stream, returns the HTTP status code
-  int send(const char* feedId, const char* streamName, double value);
-  int send(const char* feedId, const char* streamName, long value);
-  int send(const char* feedId, const char* streamName, int value);
-  int send(const char* feedId, const char* streamName, const char* value);
+  template <class T>
+  int send(const char* feedId, const char* streamName, T value);
 
   // Post multiple values to M2X all at once.
   // +feedId+ - id of the feed to post values
@@ -71,18 +90,10 @@ public:
   // stream, the succeeding +counts[1]+ number of items contain values
   // for the second stream, etc. The length of this array should be
   // the sum of all values in +counts+ array.
+  template <class T>
   int sendMultiple(const char* feedId, int streamNum,
                    const char* names[], const int counts[],
-                   const char* ats[], double values[]);
-  int sendMultiple(const char* feedId, int streamNum,
-                   const char* names[], const int counts[],
-                   const char* ats[], int values[]);
-  int sendMultiple(const char* feedId, int streamNum,
-                   const char* names[], const int counts[],
-                   const char* ats[], long values[]);
-  int sendMultiple(const char* feedId, int streamNum,
-                   const char* names[], const int counts[],
-                   const char* ats[], const char* values[]);
+                   const char* ats[], T values[]);
 
   // Receive values for a particular data stream. Since memory is
   // very limited on an Arduino, we cannot parse and get all the
@@ -115,11 +126,9 @@ public:
   // precision, which means you are free to use the double-version only
   // without any precision problems.
   // Returned value is the http status code.
+  template <class T>
   int updateLocation(const char* feedId, const char* name,
-                     double latitude, double longitude, double elevation);
-  int updateLocation(const char* feedId, const char* name,
-                     const char* latitude, const char* longitude,
-                     const char* elevation);
+                     T latitude, T longitude, T elevation);
 
   // Read location information for a feed. Also used callback to process
   // data points for memory reasons. The HTTP status code is returned,
@@ -163,5 +172,7 @@ private:
   // we get a data point
   int readLocation(location_read_callback callback, void* context);
 };
+
+#include "M2XStreamClient_template.h"
 
 #endif  /* M2XStreamClient_h */
