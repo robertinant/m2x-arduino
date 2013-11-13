@@ -52,6 +52,29 @@ public:
   int send(const char* feedId, const char* streamName, int value);
   int send(const char* feedId, const char* streamName, const char* value);
 
+  // Post multiple values to M2X all at once.
+  // +feedId+ - id of the feed to post values
+  // +streamNum+ - Number of streams to post
+  // +names+ - Array of stream names, the length of the array should
+  // be exactly +streamNum+
+  // +counts+ - Array of +streamNum+ length, each item in this array
+  // containing the number of values we want to post for each stream
+  // +ats+ - Timestamps for each value, the length of this array should
+  // be the some of all values in +counts+, for the first +counts[0]+
+  // items, the values belong to the first stream, for the following
+  // +counts[1]+ number of items, the values belong to the second stream,
+  // etc. Note timestamps are optional, if a value does not havee timestamp,
+  // we can simply put NULL here, or we can put NULl for +ats+, meaning
+  // none of the values has a timestamp
+  // +values+ - Values to post. This works the same way as +ats+, the
+  // first +counts[0]+ number of items contain values to post to the first
+  // stream, the succeeding +counts[1]+ number of items contain values
+  // for the second stream, etc. The length of this array should be
+  // the sum of all values in +counts+ array.
+  int sendMultiple(const char* feedId, int streamNum,
+                   const char* names[], const int counts[],
+                   const char* ats[], double values[]);
+
   // Receive values for a particular data stream. Since memory is
   // very limited on an Arduino, we cannot parse and get all the
   // data points in memory. Instead, we use callbacks here: whenever
