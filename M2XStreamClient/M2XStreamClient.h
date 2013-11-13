@@ -74,6 +74,15 @@ public:
   int sendMultiple(const char* feedId, int streamNum,
                    const char* names[], const int counts[],
                    const char* ats[], double values[]);
+  int sendMultiple(const char* feedId, int streamNum,
+                   const char* names[], const int counts[],
+                   const char* ats[], int values[]);
+  int sendMultiple(const char* feedId, int streamNum,
+                   const char* names[], const int counts[],
+                   const char* ats[], long values[]);
+  int sendMultiple(const char* feedId, int streamNum,
+                   const char* names[], const int counts[],
+                   const char* ats[], const char* values[]);
 
   // Receive values for a particular data stream. Since memory is
   // very limited on an Arduino, we cannot parse and get all the

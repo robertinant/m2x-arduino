@@ -11,6 +11,7 @@ int status = WL_IDLE_STATUS;
 
 char feedId[] = "<feed id>"; // Feed you want to post to
 char streamName[] = "<stream name>"; // Stream you want to post to
+char m2xKey[] = "<M2X access key>"; // Your M2X access key
 
 const char *streamNames[] = { "temperature", "humidity" };
 int counts[] = { 2, 1 };

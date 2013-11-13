@@ -117,55 +117,97 @@ int M2XStreamClient::send(const char* feedId,
   return readStatusCode(true);
 }
 
+#define WRITE_MULTIPLE_VALUES_BODY { \
+  int bytes = 0, value_index = 0; \
+  bytes += print->print("{\"values\":{"); \
+  for (int i = 0; i < streamNum; i++) { \
+    bytes += print->print("\""); \
+    bytes += print->print(names[i]); \
+    bytes += print->print("\":["); \
+    for (int j = 0; j < counts[i]; j++) { \
+      bytes += print->print("{"); \
+      if (ats && ats[value_index]) { \
+        bytes += print->print("\"at\": \""); \
+        bytes += print->print(ats[value_index]); \
+        bytes += print->print("\","); \
+      } \
+      bytes += print->print("\"value\": \""); \
+      bytes += print->print(values[value_index]); \
+      bytes += print->print("\"}"); \
+      if (j < counts[i] - 1) { bytes += print->print(","); } \
+      value_index++; \
+    } \
+    bytes += print->print("]"); \
+    if (i < streamNum - 1) { bytes += print->print(","); } \
+  } \
+  bytes += print->print("}}"); \
+  return bytes; \
+  }
+
 static int write_multiple_values(Print* print, int streamNum,
                                  const char* names[], const int counts[],
                                  const char* ats[], double values[]) {
-  int bytes = 0, value_index = 0;
-  bytes += print->print("{\"values\":{");
-  for (int i = 0; i < streamNum; i++) {
-    bytes += print->print("\"");
-    bytes += print->print(names[i]);
-    bytes += print->print("\":[");
-    for (int j = 0; j < counts[i]; j++) {
-      bytes += print->print("{");
-      if (ats && ats[value_index]) {
-        bytes += print->print("\"at\": \"");
-        bytes += print->print(ats[value_index]);
-        bytes += print->print("\",");
-      }
-      bytes += print->print("\"value\": \"");
-      bytes += print->print(values[value_index]);
-      bytes += print->print("\"}");
-
-      if (j < counts[i] - 1) { bytes += print->print(","); }
-      value_index++;
-    }
-    bytes += print->print("]");
-    if (i < streamNum - 1) { bytes += print->print(","); }
-  }
-  bytes += print->print("}}");
-  return bytes;
+  WRITE_MULTIPLE_VALUES_BODY;
 }
+
+static int write_multiple_values(Print* print, int streamNum,
+                                 const char* names[], const int counts[],
+                                 const char* ats[], int values[]) {
+  WRITE_MULTIPLE_VALUES_BODY;
+}
+
+static int write_multiple_values(Print* print, int streamNum,
+                                 const char* names[], const int counts[],
+                                 const char* ats[], long values[]) {
+  WRITE_MULTIPLE_VALUES_BODY;
+}
+
+static int write_multiple_values(Print* print, int streamNum,
+                                 const char* names[], const int counts[],
+                                 const char* ats[], const char* values[]) {
+  WRITE_MULTIPLE_VALUES_BODY;
+}
+
+#define SEND_MULTIPLE_BODY { \
+  if (_client->connect(_host, _port)) { \
+    DBGLN("%s", "Connected to M2X server!"); \
+    int length = write_multiple_values(&_null_print, streamNum, names, \
+                                       counts, ats, values); \
+    _client->print("POST /v1/feeds/"); \
+    print_encoded_string(_client, feedId); \
+    _client->println(" HTTP/1.0"); \
+    writeHttpHeader(length); \
+    write_multiple_values(_client, streamNum, names, counts, ats, values); \
+  } else { \
+    DBGLN("%s", "ERROR: Cannot connect to M2X server!"); \
+    return E_NOCONNECTION; \
+  } \
+  return readStatusCode(true); \
+  }
+
 
 int M2XStreamClient::sendMultiple(const char* feedId, int streamNum,
                                   const char* names[], const int counts[],
                                   const char* ats[], double values[]) {
-  if (_client->connect(_host, _port)) {
-    DBGLN("%s", "Connected to M2X server!");
+  SEND_MULTIPLE_BODY;
+}
 
-    int length = write_multiple_values(&_null_print, streamNum, names,
-                                       counts, ats, values);
-    _client->print("POST /v1/feeds/");
-    print_encoded_string(_client, feedId);
-    _client->println(" HTTP/1.0");
+int M2XStreamClient::sendMultiple(const char* feedId, int streamNum,
+                                  const char* names[], const int counts[],
+                                  const char* ats[], int values[]) {
+  SEND_MULTIPLE_BODY;
+}
 
-    writeHttpHeader(length);
-    write_multiple_values(_client, streamNum, names, counts, ats, values);
-  } else {
-    DBGLN("%s", "ERROR: Cannot connect to M2X server!");
-    return E_NOCONNECTION;
-  }
-  return readStatusCode(true);
+int M2XStreamClient::sendMultiple(const char* feedId, int streamNum,
+                                  const char* names[], const int counts[],
+                                  const char* ats[], long values[]) {
+  SEND_MULTIPLE_BODY;
+}
+
+int M2XStreamClient::sendMultiple(const char* feedId, int streamNum,
+                                  const char* names[], const int counts[],
+                                  const char* ats[], const char* values[]) {
+  SEND_MULTIPLE_BODY;
 }
 
 int M2XStreamClient::receive(const char* feedId, const char* streamName,
