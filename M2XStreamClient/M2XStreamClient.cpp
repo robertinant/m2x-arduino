@@ -33,10 +33,10 @@ M2XStreamClient::M2XStreamClient(Client* client,
   } \
   }
 
-int M2XStreamClient::receive(const char* feedId, const char* streamName,
-                             stream_value_read_callback callback, void* context,
-                             const char* startTime, const char* endTime,
-                             const char* limit) {
+int M2XStreamClient::fetchValues(const char* feedId, const char* streamName,
+                                 stream_value_read_callback callback, void* context,
+                                 const char* startTime, const char* endTime,
+                                 const char* limit) {
   if (_client->connect(_host, _port)) {
     bool query_started = false;
 
@@ -110,7 +110,7 @@ int print_encoded_string(Print* print, const char* str) {
   return bytes;
 }
 
-void M2XStreamClient::writeSendHeader(const char* feedId,
+void M2XStreamClient::writePostHeader(const char* feedId,
                                       const char* streamName,
                                       int contentLength) {
   _client->print("PUT /v1/feeds/");

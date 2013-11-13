@@ -54,7 +54,7 @@ void loop() {
       float temperature = (voltage - .5) * 100;
       Console.println(temperature);
 
-      int response = m2xClient.send(feedId, streamName, temperature);
+      int response = m2xClient.post(feedId, streamName, temperature);
       Console.print("M2x client response code: ");
       Console.println(response);
     }

@@ -67,9 +67,9 @@ public:
                   const char* host = kDefaultM2XHost,
                   int port = kDefaultM2XPort);
 
-  // Update data stream, returns the HTTP status code
+  // Post data stream value, returns the HTTP status code
   template <class T>
-  int send(const char* feedId, const char* streamName, T value);
+  int post(const char* feedId, const char* streamName, T value);
 
   // Post multiple values to M2X all at once.
   // +feedId+ - id of the feed to post values
@@ -91,11 +91,11 @@ public:
   // for the second stream, etc. The length of this array should be
   // the sum of all values in +counts+ array.
   template <class T>
-  int sendMultiple(const char* feedId, int streamNum,
+  int postMultiple(const char* feedId, int streamNum,
                    const char* names[], const int counts[],
                    const char* ats[], T values[]);
 
-  // Receive values for a particular data stream. Since memory is
+  // Fetch values for a particular data stream. Since memory is
   // very limited on an Arduino, we cannot parse and get all the
   // data points in memory. Instead, we use callbacks here: whenever
   // a new data point is parsed, we call the callback using the values,
@@ -107,10 +107,10 @@ public:
   // For each data point, the callback will be called once. The HTTP
   // status code will be returned. And the content is only parsed when
   // the status code is 200.
-  int receive(const char* feedId, const char* streamName,
-              stream_value_read_callback callback, void* context,
-              const char* startTime = NULL, const char* endTime = NULL,
-              const char* limit = NULL);
+  int fetchValues(const char* feedId, const char* streamName,
+                  stream_value_read_callback callback, void* context,
+                  const char* startTime = NULL, const char* endTime = NULL,
+                  const char* limit = NULL);
 
   // Update datasource location
   // NOTE: On an Arduino Uno and other ATMEGA based boards, double has
@@ -143,7 +143,7 @@ private:
   NullPrint _null_print;
 
   // Writes the HTTP header part for updating a stream value
-  void writeSendHeader(const char* feedId,
+  void writePostHeader(const char* feedId,
                        const char* streamName,
                        int contentLength);
   // Writes HTTP header lines including M2X API Key, host, content
