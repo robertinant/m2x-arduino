@@ -97,7 +97,9 @@ public:
   // status code will be returned. And the content is only parsed when
   // the status code is 200.
   int receive(const char* feedId, const char* streamName,
-              stream_value_read_callback callback, void* context);
+              stream_value_read_callback callback, void* context,
+              const char* startTime = NULL, const char* endTime = NULL,
+              const char* limit = NULL);
 
   // Update datasource location
   // NOTE: On an Arduino Uno and other ATMEGA based boards, double has

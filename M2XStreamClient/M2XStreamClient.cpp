@@ -210,16 +210,38 @@ int M2XStreamClient::sendMultiple(const char* feedId, int streamNum,
   SEND_MULTIPLE_BODY;
 }
 
+#define WRITE_QUERY_PART(client_, started_, name_, str_) { \
+  if (str_) { \
+    if (started_) { \
+      (client_)->print("&"); \
+    } else { \
+      (client_)->print("?"); \
+      started_ = true; \
+    } \
+    (client_)->print(name_ "="); \
+    (client_)->print(str_); \
+  } \
+  }
+
 int M2XStreamClient::receive(const char* feedId, const char* streamName,
-                             stream_value_read_callback callback, void* context) {
+                             stream_value_read_callback callback, void* context,
+                             const char* startTime, const char* endTime,
+                             const char* limit) {
   if (_client->connect(_host, _port)) {
+    bool query_started = false;
+
     DBGLN("%s", "Connected to M2X server!");
     _client->print("GET /v1/feeds/");
     print_encoded_string(_client, feedId);
     _client->print("/streams/");
     print_encoded_string(_client, streamName);
-    _client->println("/values HTTP/1.0");
+    _client->print("/values");
 
+    WRITE_QUERY_PART(_client, query_started, "start", startTime);
+    WRITE_QUERY_PART(_client, query_started, "end", endTime);
+    WRITE_QUERY_PART(_client, query_started, "limit", limit);
+
+    _client->println(" HTTP/1.0");
     writeHttpHeader(-1);
   } else {
     DBGLN("%s", "ERROR: Cannot connect to M2X server!");
