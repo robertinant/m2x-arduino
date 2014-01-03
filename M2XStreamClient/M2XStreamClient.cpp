@@ -6,19 +6,23 @@
 #include "LocationParseFunctions.h"
 
 const char* M2XStreamClient::kDefaultM2XHost = "api-m2x.att.com";
-const char* kUserAgentLine = "User-Agent: M2X Arduino Client/0.1";
 
 int print_encoded_string(Print* print, const char* str);
-char tolowercase(char ch);
+int tolower(int ch);
 
-char tolowercase(char ch)
+#if defined(ARDUINO_PLATFORM) || defined(MBED_PLATFORM)
+int tolower(int ch)
 {
-  // Arduino uses ASCII table, so we can simplify the implementation
+  // Arduino and mbed use ASCII table, so we can simplify the implementation
   if ((ch >= 'A') && (ch <= 'Z')) {
     return (ch + 32);
   }
   return ch;
 }
+#else
+// For other platform, we use libc's tolower by default
+#include <ctype.h>
+#endif
 
 M2XStreamClient::M2XStreamClient(Client* client,
                                  const char* key,
@@ -135,7 +139,7 @@ void M2XStreamClient::writePostHeader(const char* feedId,
 }
 
 void M2XStreamClient::writeHttpHeader(int contentLength) {
-  _client->println(kUserAgentLine);
+  _client->println(USER_AGENT);
   _client->print("X-M2X-KEY: ");
   _client->println(_key);
 
@@ -170,7 +174,7 @@ int M2XStreamClient::waitForString(const char* str) {
 
       int cmp;
       if (_case_insensitive) {
-        cmp = tolowercase(c) - tolowercase(str[currentIndex]);
+        cmp = tolower(c) - tolower(str[currentIndex]);
       } else {
         cmp = c - str[currentIndex];
       }
