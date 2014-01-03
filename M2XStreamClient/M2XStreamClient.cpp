@@ -9,12 +9,24 @@ const char* M2XStreamClient::kDefaultM2XHost = "api-m2x.att.com";
 const char* kUserAgentLine = "User-Agent: M2X Arduino Client/0.1";
 
 int print_encoded_string(Print* print, const char* str);
+char tolowercase(char ch);
+
+char tolowercase(char ch)
+{
+  // Arduino uses ASCII table, so we can simplify the implementation
+  if ((ch >= 'A') && (ch <= 'Z')) {
+    return (ch + 32);
+  }
+  return ch;
+}
 
 M2XStreamClient::M2XStreamClient(Client* client,
                                  const char* key,
+                                 int case_insensitive,
                                  const char* host,
                                  int port) : _client(client),
                                              _key(key),
+                                             _case_insensitive(case_insensitive),
                                              _host(host),
                                              _port(port),
                                              _null_print() {
@@ -156,8 +168,14 @@ int M2XStreamClient::waitForString(const char* str) {
       char c = _client->read();
       DBG("%c", c);
 
-      if ((str[currentIndex] == '*') ||
-          (c == str[currentIndex])) {
+      int cmp;
+      if (_case_insensitive) {
+        cmp = tolowercase(c) - tolowercase(str[currentIndex]);
+      } else {
+        cmp = c - str[currentIndex];
+      }
+
+      if ((str[currentIndex] == '*') || (cmp == 0)) {
         currentIndex++;
         if (str[currentIndex] == '\0') {
           return E_OK;

@@ -64,6 +64,7 @@ public:
 
   M2XStreamClient(Client* client,
                   const char* key,
+                  int case_insensitive = 1,
                   const char* host = kDefaultM2XHost,
                   int port = kDefaultM2XPort);
 
@@ -138,6 +139,7 @@ public:
 private:
   Client* _client;
   const char* _key;
+  int _case_insensitive;
   const char* _host;
   int _port;
   NullPrint _null_print;
