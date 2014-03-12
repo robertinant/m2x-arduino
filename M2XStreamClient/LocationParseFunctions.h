@@ -1,6 +1,11 @@
 #ifndef LocationParseFunctions_h
 #define LocationParseFunctions_h
 
+// MSP430 does not have atof. Include local version
+#ifdef __MSP430MCU__
+#include "atof.h"
+#endif
+
 // Data structures and functions used to parse locations
 
 #define LOCATION_BUF_LEN 20

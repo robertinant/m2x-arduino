@@ -3,7 +3,10 @@
 
 #define MIN(a, b) (((a) > (b))?(b):(a))
 
-#define ARDUINO_PLATFORM
+#define ENERGIA_PLATFORM
+
+#ifdef ENERGIA_PLATFORM
+#include "Energia.h"
 
 #ifdef ARDUINO_PLATFORM
 #include "Arduino.h"
@@ -21,11 +24,11 @@
 #include "NullPrint.h"
 
 #ifdef DEBUG
-#ifdef ARDUINO_PLATFORM
+#if defined(ARDUINO_PLATFORM) || defined(ENERGIA_PLATFORM)
 #define DBG(fmt_, data_) Serial.print(data_)
 #define DBGLN(fmt_, data_) Serial.println(data_)
 #define DBGLNEND Serial.println()
-#endif  // ARDUINO_PLATFORM
+#endif  // ARDUINO_PLATFORM || ENERGIA_PLATFORM
 
 #ifdef MBED_PLATFORM
 #define DBG(fmt_, data_) printf((fmt_), (data_))
