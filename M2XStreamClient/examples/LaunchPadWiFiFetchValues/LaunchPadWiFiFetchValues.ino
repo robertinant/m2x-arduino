@@ -29,10 +29,10 @@ void on_data_point_found(const char* at, const char* value, int index, void* con
 void setup() {
   Serial.begin(9600);
 
-  if (WiFi.status() == WL_NO_SHIELD) {
-    Serial.println("WiFi shield not present");
-    while(true);
-  }
+  // Set communication pins for CC3000
+  WiFi.setCSpin(18);  // 18: P2_2 @ F5529, PE_0 @ LM4F/TM4C
+  WiFi.setENpin(2);   //  2: P6_5 @ F5529, PB_5 @ LM4F/TM4C
+  WiFi.setIRQpin(19); // 19: P2_0 @ F5529, PB_2 @ LM4F/TM4C
 
   while ( status != WL_CONNECTED) {
     Serial.print("Attempting to connect to SSID: ");
